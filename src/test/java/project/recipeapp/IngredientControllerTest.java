@@ -14,6 +14,7 @@ import project.recipeapp.units.volumes.CentiLiter;
 import project.recipeapp.units.weights.Gram;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -105,6 +106,32 @@ public class IngredientControllerTest {
         }catch (IngredientNotFoundException e){
             assertEquals(errorMessage, e.getMessage());
         }
+    }
+
+    @Test
+    void ingredientShouldBeDeletedByController(){
+        ingredientController.newIngredient(ingredient);
+        assertTrue(ingredientRepository.findById(ingredient.getId()).isPresent());
+        ingredientController.deleteIngredient(ingredient.getId());
+        assertTrue(ingredientRepository.findById(ingredient.getId()).isEmpty());
+    }
+
+    @Test
+    void ingredientShouldBeDeletedByRequest() throws Exception{
+        ingredientController.newIngredient(ingredient);
+
+
+        this.mockMvc.perform(get("/ingredients/" + ingredient.getId()))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        this.mockMvc.perform(delete("/ingredients/" + ingredient.getId()))
+                .andDo(print())
+                .andExpect(status().is2xxSuccessful());
+
+        this.mockMvc.perform(get("/ingredients/" + ingredient.getId()))
+                .andDo(print())
+                .andExpect(status().isNotFound());
     }
 
 

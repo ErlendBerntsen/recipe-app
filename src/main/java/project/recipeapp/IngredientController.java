@@ -6,6 +6,7 @@ import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,4 +47,9 @@ public class IngredientController {
     }
 
 
+    @DeleteMapping("/ingredients/{id}")
+    ResponseEntity<?> deleteIngredient(@PathVariable Long id) {
+        repository.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
 }
