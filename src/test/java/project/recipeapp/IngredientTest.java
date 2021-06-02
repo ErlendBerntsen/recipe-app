@@ -14,6 +14,7 @@ import project.recipeapp.units.Unit;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+
 @ExtendWith(SpringExtension.class)
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -23,9 +24,10 @@ class IngredientTest {
     @Autowired
     private IngredientRepository ingredientRepository;
 
-
     @Autowired
     private UnitRepository unitRepository;
+
+
 
     private Ingredient ingredient;
     private String name;
@@ -81,4 +83,5 @@ class IngredientTest {
         String correctFormat = "Name = Absolut Vodka, Price = 464.9 kr, Quantity = 1.0L, Category = Vodka";
         assertEquals(correctFormat, ingredient.toString());
     }
+
 }

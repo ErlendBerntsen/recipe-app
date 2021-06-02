@@ -1,10 +1,12 @@
 package project.recipeapp;
 
+import lombok.Data;
 import project.recipeapp.units.Unit;
 
 import javax.persistence.*;
 
 @Entity
+@Data
 public class Ingredient {
 
     @Id
