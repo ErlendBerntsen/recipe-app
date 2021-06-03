@@ -63,7 +63,7 @@ class IngredientControllerTest {
         category = Category.ORANGE_LIQUEUR;
         ingredient = new Ingredient(name, price, amount, unit, category);
         ingredientAssembler =  new IngredientModelAssembler();
-        ingredientController =  new IngredientController(ingredientRepository, ingredientAssembler);
+        ingredientController =  new IngredientController(ingredientRepository, unitRepository, ingredientAssembler);
     }
 
     @Test
@@ -83,6 +83,30 @@ class IngredientControllerTest {
         this.mockMvc.perform(get("/ingredients"))
                 .andDo(print())
                 .andExpect(status().isOk());
+    }
+
+    void ingredientShouldBeCreatedByRequest()throws Exception{
+        String unitName = "Centiliter";
+        String jname = "\"name\":\"" + name + "\"";
+        String jprice = ",\"price\":" + price;
+        String jamount = ",\"amount\":" + amount;
+        String junit =  ",\"unit\":{\"name\":\"" + unitName
+                + "\",\"abbreviation\":\"" + "cl"
+                +  "\", \"unitType\":\"" + unitName + "\"}";
+        String jcategory =",\"category\":\"" + category.name() + "\"";
+        String jsonEdit = "{" + jname + jprice + jamount + junit + jcategory + "}";
+
+        MockHttpServletRequestBuilder builder =
+                MockMvcRequestBuilders.post("/ingredients/")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .characterEncoding("UTF-8")
+                        .content(jsonEdit);
+
+        this.mockMvc.perform(builder)
+                .andDo(print())
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(content().string(containsString(jsonEdit)));
     }
 
     @Test
@@ -141,6 +165,7 @@ class IngredientControllerTest {
                 .andExpect(status().isNotFound());
     }
 
+
     @Test
     void ingredientShouldBeEditedByController(){
         ingredientController.newIngredient(ingredient);
@@ -169,15 +194,16 @@ class IngredientControllerTest {
         double newPrice = 100;
         double newAmount = 1;
         Unit newUnit = new Liter();
-        unitRepository.save(newUnit);
+        Map<String, String> map = new HashMap<>();
+        map.put("name", newUnit.getName());
         Category newCategory = Category.VODKA;
 
         Map<String, Object> newFields = new HashMap<>();
         newFields.put("name", newName);
         newFields.put("price", newPrice);
         newFields.put("amount", newAmount);
-        newFields.put("unit", newUnit);
-        newFields.put("category", newCategory);
+        newFields.put("unit", map);
+        newFields.put("category", newCategory.name());
 
 
         assertTrue(ingredientRepository.findById(ingredient.getId()).isPresent());
@@ -197,12 +223,32 @@ class IngredientControllerTest {
         assertEquals(newCategory, ingredientRepository.findById(ingredient.getId()).get().getCategory());
     }
 
+
+
     @Test
-    void ingredientShouldBeEditedByRequest() throws  Exception{
+    void ingredientChangeEveryFieldByRequest()throws Exception{
         ingredientController.newIngredient(ingredient);
         String newName = "new name";
-        String body = "\"name\":\"" + newName + "\"";
-        String jsonEdit = "{" + body + "}";
+        double newPrice = 100;
+        double newAmount = 1;
+        Unit newUnit = new Liter();
+        Category newCategory = Category.VODKA;
+
+        String jname = "\"name\":\"" + newName + "\"";
+        String jprice = ",\"price\":" + newPrice;
+        String jamount = ",\"amount\":" + newAmount;
+        String junit =  ",\"unit\":{\"name\":\"" + newUnit.getName()
+                + "\",\"abbreviation\":\"" + newUnit.getAbbreviation() +  "\"}";
+        String jcategory =",\"category\":\"" + newCategory.name() + "\"";
+        String jsonEdit = "{" + jname + jprice + jamount + junit + jcategory + "}";
+
+        assertTrue(ingredientRepository.findById(ingredient.getId()).isPresent());
+        assertNotEquals(newName, ingredientRepository.findById(ingredient.getId()).get().getName());
+        assertNotEquals(newPrice, ingredientRepository.findById(ingredient.getId()).get().getPrice());
+        assertNotEquals(newAmount, ingredientRepository.findById(ingredient.getId()).get().getAmount());
+        assertNotEquals(newUnit.getName(), ingredientRepository.findById(ingredient.getId()).get().getUnit().getName());
+        assertNotEquals(newCategory, ingredientRepository.findById(ingredient.getId()).get().getCategory());
+
 
 
         MockHttpServletRequestBuilder builder =
@@ -212,16 +258,14 @@ class IngredientControllerTest {
                         .characterEncoding("UTF-8")
                         .content(jsonEdit);
 
+
         this.mockMvc.perform(builder)
                 .andDo(print())
                 .andExpect(status().is2xxSuccessful())
-                .andExpect(content().string(containsString(body)));
-
+                .andExpect(content().string(containsString(jname)))
+                .andExpect(content().string(containsString(jprice)))
+                .andExpect(content().string(containsString(jamount)))
+                .andExpect(content().string(containsString(jcategory)));
     }
-    //TODO Make above test handle more edits to a recipe
-    //TODO Make tests with mock GET requests for one/all
-    //TODO Make test for mock POST request
-
-
 
 }

@@ -14,13 +14,9 @@ public abstract class Unit {
     private String name;
     private String abbreviation;
 
-    public String getName(){
-        return name;
-    }
+    public abstract String getName();
 
-    public String getAbbreviation() {
-        return abbreviation;
-    }
+    public abstract String getAbbreviation();
 
 
 }

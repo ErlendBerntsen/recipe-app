@@ -15,6 +15,7 @@ import project.recipeapp.units.weights.Gram;
 public class LoadDatabase {
     private static final Logger log = LoggerFactory.getLogger(LoadDatabase.class);
 
+
     @Bean
     CommandLineRunner initDatabase(IngredientRepository ingredientRepository, UnitRepository unitRepository){
         return args -> {
@@ -38,4 +39,6 @@ public class LoadDatabase {
             });
         };
     }
+
+
 }
