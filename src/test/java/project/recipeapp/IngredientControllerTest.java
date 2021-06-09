@@ -12,6 +12,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import project.recipeapp.ingredient.*;
 import project.recipeapp.units.Unit;
 import project.recipeapp.units.volumes.Liter;
 
@@ -61,7 +62,7 @@ class IngredientControllerTest {
         category = Category.ORANGE_LIQUEUR;
         ingredient = new IngredientDTO(name, price, amount, unit , category);
         ingredientAssembler =  new IngredientModelAssembler();
-        ingredientController =  new IngredientController(ingredientRepository, unitRepository, ingredientAssembler);
+        ingredientController = new IngredientController(ingredientRepository, unitRepository, ingredientAssembler);
         ingredientRepository.deleteAll();
         ingredientController.newIngredient(ingredient);
         id = ingredientRepository.findByName(ingredient.getName()).get().getId();

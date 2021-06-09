@@ -1,4 +1,4 @@
-package project.recipeapp;
+package project.recipeapp.ingredient;
 
 public class IngredientNotFoundException extends RuntimeException{
     IngredientNotFoundException(Long id){

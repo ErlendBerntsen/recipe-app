@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import project.recipeapp.ingredient.Ingredient;
+import project.recipeapp.ingredient.IngredientRepository;
 import project.recipeapp.units.volumes.CentiLiter;
 import project.recipeapp.units.volumes.Liter;
 import project.recipeapp.units.Unit;

@@ -1,4 +1,4 @@
-package project.recipeapp;
+package project.recipeapp.ingredient;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -8,7 +8,7 @@ import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import project.recipeapp.*;
 
 
 import java.util.HashMap;
@@ -25,7 +25,7 @@ public class IngredientController {
     private final UnitRepository unitRepository;
     private final IngredientModelAssembler assembler;
 
-    IngredientController(IngredientRepository ingredientRepository, UnitRepository unitRepository, IngredientModelAssembler assembler){
+    public IngredientController(IngredientRepository ingredientRepository, UnitRepository unitRepository, IngredientModelAssembler assembler){
         this.ingredientRepository = ingredientRepository;
         this.unitRepository = unitRepository;
         this.assembler = assembler;

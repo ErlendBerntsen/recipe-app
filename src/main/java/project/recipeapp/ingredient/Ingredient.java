@@ -1,6 +1,7 @@
-package project.recipeapp;
+package project.recipeapp.ingredient;
 
 import lombok.Data;
+import project.recipeapp.Category;
 import project.recipeapp.units.Unit;
 
 import javax.persistence.*;
