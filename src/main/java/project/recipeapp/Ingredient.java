@@ -12,6 +12,7 @@ public class Ingredient {
     @Id
     @GeneratedValue
     private Long id;
+
     private String name;
     private double price;
     private double amount;

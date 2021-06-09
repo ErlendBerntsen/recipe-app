@@ -1,11 +1,14 @@
 package project.recipeapp;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import project.recipeapp.units.Unit;
+
 
 
 import java.util.HashMap;
@@ -38,15 +41,31 @@ public class IngredientController {
     }
 
     @PostMapping("/ingredients")
-    public ResponseEntity<?> newIngredient(@RequestBody Ingredient ingredient){
-        EntityModel<Ingredient> entityModel = assembler.toModel(ingredientRepository.save(ingredient));
-        return ResponseEntity
-                .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
-                .body(entityModel);
+    public ResponseEntity<?> newIngredient(@RequestBody IngredientDTO ingredientDTO){
+        if(unitRepository.findByNameIgnoreCase(ingredientDTO.getUnit()).isPresent()){
+            var ingredient = new Ingredient(
+                    ingredientDTO.getName(),
+                    ingredientDTO.getPrice(),
+                    ingredientDTO.getAmount(),
+                    unitRepository.findByNameIgnoreCase(ingredientDTO.getUnit()).get(),
+                    ingredientDTO.getCategory());
+
+            EntityModel<Ingredient> entityModel = assembler.toModel(ingredientRepository.save(ingredient));
+            return ResponseEntity
+                    .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
+                    .body(entityModel);
+        }
+        else{
+            return new ResponseEntity<>("Could not create new ingredient. No such unit exists", HttpStatus.BAD_REQUEST);
+        }
+
     }
 
+    @Operation(summary =  "Get an ingredient by its id")
     @GetMapping("/ingredients/{id}")
-    public EntityModel<Ingredient> one(@PathVariable Long id){
+    public EntityModel<Ingredient> one(
+            @Parameter (description = "id of ingredient to be searched") @PathVariable Long id)
+    {
         var ingredient = ingredientRepository.findById(id).orElseThrow(() -> new IngredientNotFoundException(id));
         return assembler.toModel(ingredient);
     }
@@ -89,7 +108,7 @@ public class IngredientController {
                     break;
                 case "unit":
                     HashMap<String, String> map = (HashMap) newFields.get(field);
-                    var unit = unitRepository.findByName(map.get("name"));
+                    var unit = unitRepository.findByNameIgnoreCase(map.get("name"));
                     if(unit.isPresent()){
                         ingredient.setUnit(unit.get());
                     }

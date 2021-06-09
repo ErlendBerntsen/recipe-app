@@ -13,9 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import project.recipeapp.units.Unit;
-import project.recipeapp.units.volumes.CentiLiter;
 import project.recipeapp.units.volumes.Liter;
-import project.recipeapp.units.weights.Gram;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,12 +43,13 @@ class IngredientControllerTest {
     private IngredientController ingredientController;
 
 
-    private Ingredient ingredient;
+    private IngredientDTO ingredient;
     private String name;
     private double price;
     private double amount;
-    private Unit unit;
+    private String unit;
     private Category category;
+    private Long id;
 
 
     @BeforeEach
@@ -58,43 +57,45 @@ class IngredientControllerTest {
         name = "Cointreau";
         price = 429.90;
         amount = 70;
-        unit = new CentiLiter();
-        unitRepository.save(unit);
+        unit = "Centiliter"; //Centiliter is created in LoadDatabase.java
         category = Category.ORANGE_LIQUEUR;
-        ingredient = new Ingredient(name, price, amount, unit, category);
+        ingredient = new IngredientDTO(name, price, amount, unit , category);
         ingredientAssembler =  new IngredientModelAssembler();
         ingredientController =  new IngredientController(ingredientRepository, unitRepository, ingredientAssembler);
+        ingredientRepository.deleteAll();
+        ingredientController.newIngredient(ingredient);
+        id = ingredientRepository.findByName(ingredient.getName()).get().getId();
     }
+
 
     @Test
     void ingredientShouldBeCreatedWithController() throws  Exception{
+        long nrOfIngredients = ingredientRepository.count();
         ingredientController.newIngredient(ingredient);
-        this.mockMvc.perform(get("/ingredients/" + ingredient.getId()))
+        this.mockMvc.perform(get("/ingredients/" ))
                 .andDo(print())
                 .andExpect(status().isOk());
+        assertEquals(nrOfIngredients + 1, ingredientRepository.count());
     }
 
     @Test
     void twoIngredientsShouldBeCreatedWithController() throws Exception{
-        Unit gram = new Gram();
-        unitRepository.save(gram);
-        ingredientController.newIngredient(ingredient);
-        ingredientController.newIngredient(new Ingredient("Sugar", 22.90, 1000, gram, Category.MISC));
+        //Gram is created in LoadDatabase.java
+        ingredientController.newIngredient(new IngredientDTO("Sugar", 22.90, 1000, "Gram", Category.MISC));
         this.mockMvc.perform(get("/ingredients"))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
 
+    @Test
     void ingredientShouldBeCreatedByRequest()throws Exception{
-        String unitName = "Centiliter";
         String jname = "\"name\":\"" + name + "\"";
         String jprice = ",\"price\":" + price;
         String jamount = ",\"amount\":" + amount;
-        String junit =  ",\"unit\":{\"name\":\"" + unitName
-                + "\",\"abbreviation\":\"" + "cl"
-                +  "\", \"unitType\":\"" + unitName + "\"}";
+        String junit =  ",\"unit\":\"" + unit + "\"";
         String jcategory =",\"category\":\"" + category.name() + "\"";
         String jsonEdit = "{" + jname + jprice + jamount + junit + jcategory + "}";
+        String junitResponse = ",\"unit\":{\"name\":\"" + unit + "\",\"abbreviation\":\"cl\"}";
 
         MockHttpServletRequestBuilder builder =
                 MockMvcRequestBuilders.post("/ingredients/")
@@ -106,23 +107,25 @@ class IngredientControllerTest {
         this.mockMvc.perform(builder)
                 .andDo(print())
                 .andExpect(status().is2xxSuccessful())
-                .andExpect(content().string(containsString(jsonEdit)));
+                .andExpect(content().string(containsString(jname)))
+                .andExpect(content().string(containsString(jprice)))
+                .andExpect(content().string(containsString(jamount)))
+                .andExpect(content().string(containsString(junitResponse)))
+                .andExpect(content().string(containsString(jcategory)));
     }
 
     @Test
     void responseShouldContainSelfLink() throws Exception{
-        ingredientController.newIngredient(ingredient);
-        String URI = "\"http://localhost/ingredients/" + ingredient.getId() + "\"";
-        this.mockMvc.perform(get("/ingredients/" + ingredient.getId()))
+        String URI = "\"http://localhost/ingredients/" + id + "\"";
+        this.mockMvc.perform(get("/ingredients/" + id))
                 .andDo(print())
                 .andExpect(content().string(containsString(URI)));
     }
 
     @Test
     void responseShouldContainAggregateRootLink() throws Exception{
-        ingredientController.newIngredient(ingredient);
         String URI = "\"http://localhost/ingredients\"";
-        this.mockMvc.perform(get("/ingredients/" + ingredient.getId()))
+        this.mockMvc.perform(get("/ingredients/" + id))
                 .andDo(print())
                 .andExpect(content().string(containsString(URI)));
     }
@@ -130,10 +133,10 @@ class IngredientControllerTest {
 
     @Test
     void ingredientNotFoundShouldHaveAppropriateErrorMessage(){
-        Long id = -1L;
-        String errorMessage = "Could not find ingredient " + id;
+        Long badId = -1L;
+        String errorMessage = "Could not find ingredient " + badId;
         try{
-            ingredientController.one(id);
+            ingredientController.one(badId);
         }catch (IngredientNotFoundException e){
             assertEquals(errorMessage, e.getMessage());
         }
@@ -141,26 +144,22 @@ class IngredientControllerTest {
 
     @Test
     void ingredientShouldBeDeletedByController(){
-        ingredientController.newIngredient(ingredient);
-        assertTrue(ingredientRepository.findById(ingredient.getId()).isPresent());
-        ingredientController.deleteIngredient(ingredient.getId());
-        assertTrue(ingredientRepository.findById(ingredient.getId()).isEmpty());
+        assertTrue(ingredientRepository.findById(id).isPresent());
+        ingredientController.deleteIngredient(id);
+        assertTrue(ingredientRepository.findById(id).isEmpty());
     }
 
     @Test
     void ingredientShouldBeDeletedByRequest() throws Exception{
-        ingredientController.newIngredient(ingredient);
-
-
-        this.mockMvc.perform(get("/ingredients/" + ingredient.getId()))
+        this.mockMvc.perform(get("/ingredients/" + id))
                 .andDo(print())
                 .andExpect(status().isOk());
 
-        this.mockMvc.perform(delete("/ingredients/" + ingredient.getId()))
+        this.mockMvc.perform(delete("/ingredients/" + id))
                 .andDo(print())
                 .andExpect(status().is2xxSuccessful());
 
-        this.mockMvc.perform(get("/ingredients/" + ingredient.getId()))
+        this.mockMvc.perform(get("/ingredients/" + id))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -168,7 +167,6 @@ class IngredientControllerTest {
 
     @Test
     void ingredientShouldBeEditedByController(){
-        ingredientController.newIngredient(ingredient);
         String newName = "new name";
         double newPrice = 100;
         Map<String, Object> newFields = new HashMap<>();
@@ -176,20 +174,19 @@ class IngredientControllerTest {
         newFields.put("price", newPrice);
 
 
-        assertTrue(ingredientRepository.findById(ingredient.getId()).isPresent());
-        assertNotEquals(newName, ingredientRepository.findById(ingredient.getId()).get().getName());
-        assertNotEquals(newPrice, ingredientRepository.findById(ingredient.getId()).get().getPrice());
+        assertTrue(ingredientRepository.findById(id).isPresent());
+        assertNotEquals(newName, ingredientRepository.findById(id).get().getName());
+        assertNotEquals(newPrice, ingredientRepository.findById(id).get().getPrice());
 
-        ingredientController.editIngredient(ingredient.getId(), newFields);
+        ingredientController.editIngredient(id, newFields);
 
-        assertTrue(ingredientRepository.findById(ingredient.getId()).isPresent());
-        assertEquals(newName, ingredientRepository.findById(ingredient.getId()).get().getName());
-        assertEquals(newPrice, ingredientRepository.findById(ingredient.getId()).get().getPrice());
+        assertTrue(ingredientRepository.findById(id).isPresent());
+        assertEquals(newName, ingredientRepository.findById(id).get().getName());
+        assertEquals(newPrice, ingredientRepository.findById(id).get().getPrice());
     }
 
     @Test
     void ingredientChangeEveryFieldByController(){
-        ingredientController.newIngredient(ingredient);
         String newName = "new name";
         double newPrice = 100;
         double newAmount = 1;
@@ -206,28 +203,27 @@ class IngredientControllerTest {
         newFields.put("category", newCategory.name());
 
 
-        assertTrue(ingredientRepository.findById(ingredient.getId()).isPresent());
-        assertNotEquals(newName, ingredientRepository.findById(ingredient.getId()).get().getName());
-        assertNotEquals(newPrice, ingredientRepository.findById(ingredient.getId()).get().getPrice());
-        assertNotEquals(newAmount, ingredientRepository.findById(ingredient.getId()).get().getAmount());
-        assertNotEquals(newUnit.getName(), ingredientRepository.findById(ingredient.getId()).get().getUnit().getName());
-        assertNotEquals(newCategory, ingredientRepository.findById(ingredient.getId()).get().getCategory());
+        assertTrue(ingredientRepository.findById(id).isPresent());
+        assertNotEquals(newName, ingredientRepository.findById(id).get().getName());
+        assertNotEquals(newPrice, ingredientRepository.findById(id).get().getPrice());
+        assertNotEquals(newAmount, ingredientRepository.findById(id).get().getAmount());
+        assertNotEquals(newUnit.getName(), ingredientRepository.findById(id).get().getUnit().getName());
+        assertNotEquals(newCategory, ingredientRepository.findById(id).get().getCategory());
 
-        ingredientController.editIngredient(ingredient.getId(), newFields);
+        ingredientController.editIngredient(id, newFields);
 
-        assertTrue(ingredientRepository.findById(ingredient.getId()).isPresent());
-        assertEquals(newName, ingredientRepository.findById(ingredient.getId()).get().getName());
-        assertEquals(newPrice, ingredientRepository.findById(ingredient.getId()).get().getPrice());
-        assertEquals(newAmount, ingredientRepository.findById(ingredient.getId()).get().getAmount());
-        assertEquals(newUnit.getName(), ingredientRepository.findById(ingredient.getId()).get().getUnit().getName());
-        assertEquals(newCategory, ingredientRepository.findById(ingredient.getId()).get().getCategory());
+        assertTrue(ingredientRepository.findById(id).isPresent());
+        assertEquals(newName, ingredientRepository.findById(id).get().getName());
+        assertEquals(newPrice, ingredientRepository.findById(id).get().getPrice());
+        assertEquals(newAmount, ingredientRepository.findById(id).get().getAmount());
+        assertEquals(newUnit.getName(), ingredientRepository.findById(id).get().getUnit().getName());
+        assertEquals(newCategory, ingredientRepository.findById(id).get().getCategory());
     }
 
 
 
     @Test
     void ingredientChangeEveryFieldByRequest()throws Exception{
-        ingredientController.newIngredient(ingredient);
         String newName = "new name";
         double newPrice = 100;
         double newAmount = 1;
@@ -242,17 +238,17 @@ class IngredientControllerTest {
         String jcategory =",\"category\":\"" + newCategory.name() + "\"";
         String jsonEdit = "{" + jname + jprice + jamount + junit + jcategory + "}";
 
-        assertTrue(ingredientRepository.findById(ingredient.getId()).isPresent());
-        assertNotEquals(newName, ingredientRepository.findById(ingredient.getId()).get().getName());
-        assertNotEquals(newPrice, ingredientRepository.findById(ingredient.getId()).get().getPrice());
-        assertNotEquals(newAmount, ingredientRepository.findById(ingredient.getId()).get().getAmount());
-        assertNotEquals(newUnit.getName(), ingredientRepository.findById(ingredient.getId()).get().getUnit().getName());
-        assertNotEquals(newCategory, ingredientRepository.findById(ingredient.getId()).get().getCategory());
+        assertTrue(ingredientRepository.findById(id).isPresent());
+        assertNotEquals(newName, ingredientRepository.findById(id).get().getName());
+        assertNotEquals(newPrice, ingredientRepository.findById(id).get().getPrice());
+        assertNotEquals(newAmount, ingredientRepository.findById(id).get().getAmount());
+        assertNotEquals(newUnit.getName(), ingredientRepository.findById(id).get().getUnit().getName());
+        assertNotEquals(newCategory, ingredientRepository.findById(id).get().getCategory());
 
 
 
         MockHttpServletRequestBuilder builder =
-                MockMvcRequestBuilders.patch("/ingredients/" + ingredient.getId())
+                MockMvcRequestBuilders.patch("/ingredients/" + id)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .accept(MediaType.APPLICATION_JSON)
                         .characterEncoding("UTF-8")
