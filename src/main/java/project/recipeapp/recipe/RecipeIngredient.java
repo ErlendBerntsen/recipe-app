@@ -4,25 +4,30 @@ import lombok.Data;
 import project.recipeapp.ingredient.Ingredient;
 import project.recipeapp.units.Unit;
 
+
 import javax.persistence.Embeddable;
 import javax.persistence.ManyToOne;
 
 @Data
 @Embeddable
 public class RecipeIngredient {
-    @ManyToOne
-    Ingredient ingredient;
 
-    double amount;
+    private String name;
 
     @ManyToOne
-    Unit unit;
+    private Ingredient ingredient;
+
+    private double amount;
+
+    @ManyToOne
+    private Unit unit;
 
     public RecipeIngredient(){
 
     }
 
-    public RecipeIngredient(Ingredient ingredient, double amount, Unit unit){
+    public RecipeIngredient(String name,  Ingredient ingredient, double amount, Unit unit){
+        this.name = name;
         this.ingredient = ingredient;
         this.amount = amount;
         this.unit = unit;
@@ -30,8 +35,9 @@ public class RecipeIngredient {
 
     @Override
     public String toString(){
-        return "Name: " + ingredient.getName()
+        return "Name: " + name
+                + ", Ingredient: " + ingredient.getName()
                 + ", Amount: " + amount
-                + ", Unit: " + unit.getAbbreviation();
+                + ", Unit: " + unit;
     }
 }

@@ -75,8 +75,8 @@ class IngredientTest {
         Ingredient ingredient2 = new Ingredient(capMorg, 325.90,70, centiliter, rumCategory);
         ingredientRepository.save(ingredient);
         ingredientRepository.save(ingredient2);
-        var ing1 = ingredientRepository.findByName(name);
-        var ing2 = ingredientRepository.findByName(capMorg);
+        var ing1 = ingredientRepository.findByNameIgnoreCase(name);
+        var ing2 = ingredientRepository.findByNameIgnoreCase(capMorg);
         assertTrue(ing1.isPresent() && ing2.isPresent());
     }
 

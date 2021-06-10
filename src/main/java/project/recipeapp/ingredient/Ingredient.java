@@ -42,4 +42,12 @@ public class Ingredient {
         + ", Quantity = " +  amount + unit.getAbbreviation()
         + ", Category = " +  category.toString();
     }
+
+    public String toJson(){
+        return "{\"name\":\"" + name + "\"" +
+                ",\"price\":" + price +
+                ",\"amount\":" + amount +
+                ",\"unit\":\"" + unit.getName() + "\"" +
+                ",\"category\":\"" + category + "\"}";
+    }
 }

@@ -65,7 +65,7 @@ class IngredientControllerTest {
         ingredientController = new IngredientController(ingredientRepository, unitRepository, ingredientAssembler);
         ingredientRepository.deleteAll();
         ingredientController.newIngredient(ingredient);
-        id = ingredientRepository.findByName(ingredient.getName()).get().getId();
+        id = ingredientRepository.findByNameIgnoreCase(ingredient.getName()).get().getId();
     }
 
 

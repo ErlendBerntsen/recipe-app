@@ -14,16 +14,17 @@ public class Recipe {
     @GeneratedValue
     private Long id;
 
-    String name;
-    String description = "";
-    String steps = "";
-    String notes = "";
-    String glass = "";
-    double rating;
-    double difficulty;
+    private String name;
+    private String description = "";
+    private String steps = "";
+    private String notes = "";
+    private String glass = "";
+    private double rating;
+    private double difficulty;
 
-    @ElementCollection
-    List<RecipeIngredient> ingredients;
+
+    @ElementCollection(fetch =  FetchType.EAGER)
+    private List<RecipeIngredient> ingredients;
 
 
     public Recipe (){

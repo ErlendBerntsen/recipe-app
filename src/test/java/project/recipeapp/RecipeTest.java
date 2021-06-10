@@ -31,7 +31,6 @@ class RecipeTest {
     private String description;
     private String steps;
     private String glass;
-    private double price;
     private double rating;
     private double difficulty;
     private String notes;
@@ -70,7 +69,7 @@ class RecipeTest {
         unitRepository.save(centiLiter);
         unitRepository.save(liter);
 
-        Ingredient gin = new Ingredient("Gin", 489.90, 1, liter, Category.GIN);
+        Ingredient gin = new Ingredient("Beefeater London Dry", 489.90, 1, liter, Category.GIN);
         Ingredient lemonJuice = new Ingredient("Lemon Juice", 20.50, 115, milliLiter, Category.JUICE);
         Ingredient raspberrySyrup = new Ingredient("Raspberry Syrup", 20, 20, centiLiter, Category.JUICE);
         Ingredient eggWhite = new Ingredient("Egg White", 5, 30, milliLiter , Category.FRIDGE_PANTRY);
@@ -82,10 +81,10 @@ class RecipeTest {
         ingredientRepository.save(eggWhite);
 
         ingredients = new ArrayList<>();
-        RecipeIngredient ginIngredient = new RecipeIngredient(gin, 45, milliLiter);
-        RecipeIngredient lemonJuiceIngredient = new RecipeIngredient(lemonJuice, 22.5, milliLiter);
-        RecipeIngredient raspberrySyrupIngredient = new RecipeIngredient(raspberrySyrup, 22.5, milliLiter);
-        RecipeIngredient eggWhiteIngredient = new RecipeIngredient(eggWhite, 15, milliLiter);
+        RecipeIngredient ginIngredient = new RecipeIngredient("Gin", gin, 45, milliLiter);
+        RecipeIngredient lemonJuiceIngredient = new RecipeIngredient("Lemon Juice", lemonJuice, 22.5, milliLiter);
+        RecipeIngredient raspberrySyrupIngredient = new RecipeIngredient("Raspberry Syrup", raspberrySyrup, 22.5, milliLiter);
+        RecipeIngredient eggWhiteIngredient = new RecipeIngredient("Egg White", eggWhite, 15, milliLiter);
         ingredients.add(ginIngredient);
         ingredients.add(lemonJuiceIngredient);
         ingredients.add(raspberrySyrupIngredient);
@@ -127,7 +126,6 @@ class RecipeTest {
         recipe.setGlass(glass);
         recipe.setRating(rating);
         recipe.setDifficulty(difficulty);
-        System.out.println(recipe.toString());
         assertEquals(format, recipe.toString());
     }
 }
