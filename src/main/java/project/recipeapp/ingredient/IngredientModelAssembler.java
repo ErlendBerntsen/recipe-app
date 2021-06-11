@@ -3,8 +3,6 @@ package project.recipeapp.ingredient;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
-import project.recipeapp.ingredient.Ingredient;
-import project.recipeapp.ingredient.IngredientController;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;

@@ -26,6 +26,7 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.hasValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -54,6 +55,7 @@ class RecipeControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    private RecipeModelAssembler assembler;
     private RecipeDTO recipeDTO;
     private String recipeName;
     private String description;
@@ -76,11 +78,12 @@ class RecipeControllerTest {
 
 
         recipeName = "Clover Club";
-        steps = "\t1. Combine all the ingredients into your cocktail\n"
-                + "\t2. Dry shake (without ice)\n"
-                + "\t3. Wet shake (with ice)\n"
-                + "\t4. Strain into a chilled coupe\n"
-                + "\t5. Garnish with skewered raspberries";
+        steps = """
+                \t1. Combine all the ingredients into your cocktail
+                \t2. Dry shake (without ice)
+                \t3. Wet shake (with ice)
+                \t4. Strain into a chilled coupe
+                \t5. Garnish with skewered raspberries""";
         description = "A sour and sweet cocktail from the early 1900's with taste of lemon and raspberries.";
         glass = "Coupe";
         rating = 7;
@@ -117,7 +120,8 @@ class RecipeControllerTest {
         ingredients.add(eggWhiteDTO);
 
         recipeDTO = new RecipeDTO(recipeName, description, steps, notes, glass, rating, difficulty, ingredients);
-        recipeController = new RecipeController(recipeRepository, unitRepository, ingredientRepository);
+        assembler = new RecipeModelAssembler();
+        recipeController = new RecipeController(recipeRepository, unitRepository, ingredientRepository, assembler);
     }
 
     @Test
@@ -190,8 +194,99 @@ class RecipeControllerTest {
         this.mockMvc.perform(get("/recipes"))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$..ingredients", hasSize((int) recipeRepository.count())));
+                .andExpect(jsonPath("$._embedded.recipeList", hasSize((int) recipeRepository.count())));
+    }
 
+    @Test
+    void oneRecipeShouldBeReturnedWithController(){
+        Recipe recipe = new Recipe("", new ArrayList<>());
+        recipeRepository.save(recipe);
+        assertEquals(recipe.getId(), recipeController.one(recipe.getId()).getContent().getId());
+    }
+
+    @Test
+    void oneRecipeShouldBeReturnedWithURIRequest() throws Exception{
+        Recipe recipe = new Recipe("", new ArrayList<>());
+        recipeRepository.save(recipe);
+        this.mockMvc.perform(get("/recipes/" + recipe.getId()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath( "$.id", is (recipe.getId().intValue())));
+    }
+
+    @Test
+    void recipeShouldContainSelfLink()throws Exception{
+        Recipe recipe = new Recipe("", new ArrayList<>());
+        recipeRepository.save(recipe);
+        String selfLink = "http://localhost/recipes/" + recipe.getId();
+        this.mockMvc.perform(get("/recipes/" + recipe.getId()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath( "$._links.self.href", is (selfLink)));
+    }
+
+    @Test
+    void recipeShouldContainAggregateRootLink()throws Exception{
+        Recipe recipe = new Recipe("", new ArrayList<>());
+        recipeRepository.save(recipe);
+        String aggregateRootLink = "http://localhost/recipes";
+        this.mockMvc.perform(get("/recipes/" + recipe.getId()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath( "$._links.recipes.href", is (aggregateRootLink)));
+    }
+
+    @Test
+    void listOfAllRecipesShouldContainSelfLink()throws Exception{
+        String selfLink = "http://localhost/recipes";
+        this.mockMvc.perform(get("/recipes"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath( "$._links.self.href", is (selfLink)));
+    }
+
+    @Test
+    void everyRecipeInListOfAllRecipesShouldContainSelfAndAggregateRootLink()throws Exception{
+        Recipe recipe1 = new Recipe("Recipe1", new ArrayList<>());
+        Recipe recipe2 = new Recipe("Recipe2", new ArrayList<>());
+        recipeRepository.save(recipe1);
+        recipeRepository.save(recipe2);
+
+        String path = "$._embedded.recipeList[";
+        String aggregateRootLink = "http://localhost/recipes";
+
+        this.mockMvc.perform(get("/recipes"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath(path +   "0]._links.self.href",
+                        is(aggregateRootLink + "/" + recipe1.getId())))
+                .andExpect(jsonPath(path + "0]._links.recipes.href",
+                        is(aggregateRootLink)))
+                .andExpect(jsonPath(path +   "1]._links.self.href",
+                        is(aggregateRootLink + "/" + recipe2.getId())))
+                .andExpect(jsonPath(path  + "1]._links.recipes.href",
+                        is(aggregateRootLink)));
+    }
+
+    @Test
+    void recipeNotFoundShouldHaveAppropriateErrorMessageWithController(){
+        Long badId = -1L;
+        String errorMessage = "Could not find recipe " + badId;
+        try{
+            recipeController.one(badId);
+        }catch (RecipeNotFoundException e){
+            assertEquals(errorMessage, e.getMessage());
+        }
+    }
+
+    @Test
+    void recipeNotFoundShouldHaveAppropriateErrorMessageWithURIRequest()throws Exception{
+        long badId = -1L;
+        String errorMessage = "Could not find recipe " + badId;
+        this.mockMvc.perform(get("/recipes/" + badId))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$", is(errorMessage)));
     }
 
 }

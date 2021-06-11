@@ -2,18 +2,20 @@ package project.recipeapp.recipe;
 
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import project.recipeapp.UnitRepository;
 import project.recipeapp.ingredient.Ingredient;
+import project.recipeapp.ingredient.IngredientModelAssembler;
 import project.recipeapp.ingredient.IngredientRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 public class RecipeController {
@@ -21,11 +23,14 @@ public class RecipeController {
     private RecipeRepository recipeRepository;
     private UnitRepository unitRepository;
     private IngredientRepository ingredientRepository;
+    private RecipeModelAssembler assembler;
 
-    public RecipeController(RecipeRepository recipeRepository, UnitRepository unitRepository, IngredientRepository ingredientRepository){
+    public RecipeController(RecipeRepository recipeRepository, UnitRepository unitRepository,
+                            IngredientRepository ingredientRepository, RecipeModelAssembler assembler){
         this.recipeRepository = recipeRepository;
         this.unitRepository = unitRepository;
         this.ingredientRepository = ingredientRepository;
+        this.assembler = assembler;
     }
 
     @PostMapping("/recipes")
@@ -64,8 +69,14 @@ public class RecipeController {
     public CollectionModel<EntityModel<Recipe>> all(){
         List<EntityModel<Recipe>> recipes = new ArrayList<>();
         for(Recipe recipe : recipeRepository.findAll()){
-            recipes.add(EntityModel.of(recipe));
+            recipes.add(assembler.toModel(recipe));
         }
-        return CollectionModel.of(recipes);
+        return CollectionModel.of(recipes, linkTo(methodOn(RecipeController.class).all()).withSelfRel());
+    }
+
+    @GetMapping("/recipes/{id}")
+    public EntityModel<Recipe> one(@PathVariable Long id) {
+        var recipe = recipeRepository.findById(id).orElseThrow(() -> new RecipeNotFoundException(id));
+        return  assembler.toModel(recipe);
     }
 }

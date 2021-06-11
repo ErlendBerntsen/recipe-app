@@ -19,6 +19,7 @@ import project.recipeapp.units.volumes.Liter;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -133,7 +134,7 @@ class IngredientControllerTest {
 
 
     @Test
-    void ingredientNotFoundShouldHaveAppropriateErrorMessage(){
+    void ingredientNotFoundShouldHaveAppropriateErrorMessageWithController(){
         Long badId = -1L;
         String errorMessage = "Could not find ingredient " + badId;
         try{
@@ -141,6 +142,16 @@ class IngredientControllerTest {
         }catch (IngredientNotFoundException e){
             assertEquals(errorMessage, e.getMessage());
         }
+    }
+
+    @Test
+    void ingredientNotFoundShouldHaveAppropriateErrorMessageWithURIRequest()throws Exception{
+        long badId = -1L;
+        String errorMessage = "Could not find ingredient " + badId;
+        this.mockMvc.perform(get("/ingredients/" + badId))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$", is(errorMessage)));
     }
 
     @Test
