@@ -22,15 +22,18 @@ public class RecipeIngredient {
     @ManyToOne
     private Unit unit;
 
+    private boolean isGarnish;
+
     public RecipeIngredient(){
 
     }
 
-    public RecipeIngredient(String name,  Ingredient ingredient, double amount, Unit unit){
+    public RecipeIngredient(String name,  Ingredient ingredient, double amount, Unit unit, boolean isGarnish){
         this.name = name;
         this.ingredient = ingredient;
         this.amount = amount;
         this.unit = unit;
+        this.isGarnish = isGarnish;
     }
 
     @Override
@@ -38,6 +41,7 @@ public class RecipeIngredient {
         return "Name: " + name
                 + ", Ingredient: " + ingredient.getName()
                 + ", Amount: " + amount
-                + ", Unit: " + unit;
+                + ", Unit: " + unit
+                + ", Garnish: " + isGarnish;
     }
 }

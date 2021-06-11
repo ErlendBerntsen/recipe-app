@@ -15,6 +15,7 @@ public class Recipe {
     private Long id;
 
     private String name;
+    private int portions = 1;
     private String description = "";
     private String steps = "";
     private String notes = "";
@@ -39,6 +40,7 @@ public class Recipe {
     @Override
     public String toString(){
         return "Name: " + name + "\n"
+                + "Portions: " + portions + "\n"
                 + "Description: " + description + "\n"
                 + "Steps:\n" + steps + "\n"
                 + "Notes: " + notes + "\n"

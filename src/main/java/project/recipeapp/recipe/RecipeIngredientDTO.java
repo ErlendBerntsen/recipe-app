@@ -14,15 +14,18 @@ public class RecipeIngredientDTO {
 
     private String unit;
 
+    private boolean isGarnish;
+
     public RecipeIngredientDTO(){
 
     }
 
-    public RecipeIngredientDTO(String name, String ingredient, double amount, String unit){
+    public RecipeIngredientDTO(String name, String ingredient, double amount, String unit, boolean isGarnish){
         this.name = name;
         this.ingredient = ingredient;
         this.amount = amount;
         this.unit = unit;
+        this.isGarnish = isGarnish;
     }
 
 

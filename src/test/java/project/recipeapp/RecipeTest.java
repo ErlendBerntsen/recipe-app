@@ -27,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class RecipeTest {
 
     private Recipe recipe;
+    private int portions;
     private String name;
     private String description;
     private String steps;
@@ -48,6 +49,7 @@ class RecipeTest {
     @BeforeEach
     void setup(){
         name = "Clover Club";
+        portions = 1;
         steps = "\t1. Combine all the ingredients into your cocktail\n"
                 + "\t2. Dry shake (without ice)\n"
                 + "\t3. Wet shake (with ice)\n"
@@ -81,10 +83,10 @@ class RecipeTest {
         ingredientRepository.save(eggWhite);
 
         ingredients = new ArrayList<>();
-        RecipeIngredient ginIngredient = new RecipeIngredient("Gin", gin, 45, milliLiter);
-        RecipeIngredient lemonJuiceIngredient = new RecipeIngredient("Lemon Juice", lemonJuice, 22.5, milliLiter);
-        RecipeIngredient raspberrySyrupIngredient = new RecipeIngredient("Raspberry Syrup", raspberrySyrup, 22.5, milliLiter);
-        RecipeIngredient eggWhiteIngredient = new RecipeIngredient("Egg White", eggWhite, 15, milliLiter);
+        RecipeIngredient ginIngredient = new RecipeIngredient("Gin", gin, 45, milliLiter,false);
+        RecipeIngredient lemonJuiceIngredient = new RecipeIngredient("Lemon Juice", lemonJuice, 22.5, milliLiter,false);
+        RecipeIngredient raspberrySyrupIngredient = new RecipeIngredient("Raspberry Syrup", raspberrySyrup, 22.5, milliLiter,false);
+        RecipeIngredient eggWhiteIngredient = new RecipeIngredient("Egg White", eggWhite, 15, milliLiter,false);
         ingredients.add(ginIngredient);
         ingredients.add(lemonJuiceIngredient);
         ingredients.add(raspberrySyrupIngredient);
@@ -112,6 +114,7 @@ class RecipeTest {
     @Test
     void recipeShouldBePrintedCorrectly(){
         String format = "Name: " + name + "\n"
+                + "Portions: " + portions +"\n"
                 + "Description: " + description + "\n"
                 + "Steps:\n" + steps + "\n"
                 + "Notes: " + notes + "\n"
