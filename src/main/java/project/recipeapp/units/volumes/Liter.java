@@ -7,10 +7,12 @@ public  class Liter extends Volume {
 
     private String name;
     private String abbreviation;
+    private double ratioToMainUnit;
 
     public Liter(){
         name = "Liter";
         abbreviation = "L";
+        ratioToMainUnit = 1;
     }
 
 
@@ -22,5 +24,10 @@ public  class Liter extends Volume {
     @Override
     public String getAbbreviation() {
         return abbreviation;
+    }
+
+    @Override
+    public double getRatioToMainUnit (){
+        return ratioToMainUnit;
     }
 }

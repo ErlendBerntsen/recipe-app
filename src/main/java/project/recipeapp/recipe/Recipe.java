@@ -1,6 +1,8 @@
 package project.recipeapp.recipe;
 
 import lombok.Data;
+import project.recipeapp.ingredient.Ingredient;
+import project.recipeapp.units.Unit;
 
 
 import javax.persistence.*;
@@ -22,6 +24,7 @@ public class Recipe {
     private String glass = "";
     private double rating;
     private double difficulty;
+    private double price;
 
 
     @ElementCollection(fetch =  FetchType.EAGER)
@@ -35,6 +38,7 @@ public class Recipe {
     public Recipe(String name,  List<RecipeIngredient> ingredients) {
         this.name = name;
         this.ingredients = ingredients;
+        calculatePrice();
     }
 
     @Override
@@ -48,6 +52,19 @@ public class Recipe {
                 + "Rating: " + rating + "/10\n"
                 + "Difficulty: " + difficulty + "/10\n"
                 + "Ingredients: " + ingredients.toString();
+    }
+
+    private void calculatePrice(){
+        for(RecipeIngredient recipeIngredient : ingredients){
+            Unit recipeIngredientUnit = recipeIngredient.getUnit();
+            Ingredient ingredient = recipeIngredient.getIngredient();
+            Unit ingredientUnit = ingredient.getUnit();
+            double amount = recipeIngredient.getAmount();
+            double convertedAmount = Unit.convert(amount, ingredientUnit, recipeIngredientUnit);
+            double percentage = convertedAmount / ingredient.getAmount();
+            price += percentage * ingredient.getPrice();
+        }
+        price = Math.round(price);
     }
 
 

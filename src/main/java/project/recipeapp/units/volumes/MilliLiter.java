@@ -8,11 +8,14 @@ public class MilliLiter extends Volume {
 
     private String name;
     private String abbreviation;
+    private double ratioToMainUnit;
 
     public MilliLiter(){
         name = "Milliliter";
         abbreviation = "ml";
+        ratioToMainUnit = 1000;
     }
+
 
     @Override
     public String getName() {
@@ -22,6 +25,11 @@ public class MilliLiter extends Volume {
     @Override
     public String getAbbreviation() {
         return abbreviation;
+    }
+
+    @Override
+    public double getRatioToMainUnit (){
+        return ratioToMainUnit;
     }
 
 }

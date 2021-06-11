@@ -12,6 +12,7 @@ import project.recipeapp.ingredient.IngredientRepository;
 import project.recipeapp.recipe.Recipe;
 import project.recipeapp.recipe.RecipeIngredient;
 import project.recipeapp.recipe.RecipeRepository;
+import project.recipeapp.units.Unit;
 import project.recipeapp.units.volumes.CentiLiter;
 import project.recipeapp.units.volumes.Liter;
 import project.recipeapp.units.volumes.MilliLiter;
@@ -20,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static project.recipeapp.units.Unit.convert;
 
 @ExtendWith(SpringExtension.class)
 @DataJpaTest
@@ -36,6 +38,12 @@ class RecipeTest {
     private double difficulty;
     private String notes;
     private List<RecipeIngredient> ingredients;
+    private Ingredient gin;
+    private Ingredient lemonJuice;
+    private Ingredient raspberrySyrup;
+    private Ingredient eggWhite;
+
+
 
     @Autowired
     private UnitRepository unitRepository;
@@ -71,10 +79,10 @@ class RecipeTest {
         unitRepository.save(centiLiter);
         unitRepository.save(liter);
 
-        Ingredient gin = new Ingredient("Beefeater London Dry", 489.90, 1, liter, Category.GIN);
-        Ingredient lemonJuice = new Ingredient("Lemon Juice", 20.50, 115, milliLiter, Category.JUICE);
-        Ingredient raspberrySyrup = new Ingredient("Raspberry Syrup", 20, 20, centiLiter, Category.JUICE);
-        Ingredient eggWhite = new Ingredient("Egg White", 5, 30, milliLiter , Category.FRIDGE_PANTRY);
+        gin = new Ingredient("Beefeater London Dry", 489.90, 1, liter, Category.GIN);
+        lemonJuice = new Ingredient("Lemon Juice", 20.50, 115, milliLiter, Category.JUICE);
+        raspberrySyrup = new Ingredient("Raspberry Syrup", 20, 20, centiLiter, Category.JUICE);
+        eggWhite = new Ingredient("Egg White", 5, 30, milliLiter , Category.FRIDGE_PANTRY);
 
         ingredientRepository.deleteAll();
         ingredientRepository.save(gin);
@@ -130,5 +138,15 @@ class RecipeTest {
         recipe.setRating(rating);
         recipe.setDifficulty(difficulty);
         assertEquals(format, recipe.toString());
+    }
+
+    @Test
+    void recipeShouldCalculatePriceFromIngredients(){
+        double price = 0;
+        price += gin.getPrice() * ((45.0/1000.0)/ 1.0);
+        price += lemonJuice.getPrice() * ((22.5/1.0)/ 115.0);
+        price += raspberrySyrup.getPrice() * ((22.5/10.0)/ 20.0);
+        price += eggWhite.getPrice() * ((15.0/1.0)/ 30.0);
+        assertEquals(Math.round(price), recipe.getPrice());
     }
 }

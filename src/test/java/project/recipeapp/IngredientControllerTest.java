@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import project.recipeapp.ingredient.*;
+import project.recipeapp.recipe.RecipeRepository;
 import project.recipeapp.units.Unit;
 import project.recipeapp.units.volumes.Liter;
 
@@ -37,6 +38,9 @@ class IngredientControllerTest {
 
     @Autowired
     private IngredientRepository ingredientRepository;
+
+    @Autowired
+    private RecipeRepository recipeRepository;
 
     @Autowired
     private UnitRepository unitRepository;
@@ -64,6 +68,7 @@ class IngredientControllerTest {
         ingredient = new IngredientDTO(name, price, amount, unit , category);
         ingredientAssembler =  new IngredientModelAssembler();
         ingredientController = new IngredientController(ingredientRepository, unitRepository, ingredientAssembler);
+        recipeRepository.deleteAll();
         ingredientRepository.deleteAll();
         ingredientController.newIngredient(ingredient);
         id = ingredientRepository.findByNameIgnoreCase(ingredient.getName()).get().getId();
@@ -97,7 +102,7 @@ class IngredientControllerTest {
         String junit =  ",\"unit\":\"" + unit + "\"";
         String jcategory =",\"category\":\"" + category.name() + "\"";
         String jsonEdit = "{" + jname + jprice + jamount + junit + jcategory + "}";
-        String junitResponse = ",\"unit\":{\"name\":\"" + unit + "\",\"abbreviation\":\"cl\"}";
+        String junitResponse = ",\"unit\":{\"name\":\"" + unit + "\",\"abbreviation\":\"cl\",\"ratioToMainUnit\":100.0}";
 
         MockHttpServletRequestBuilder builder =
                 MockMvcRequestBuilders.post("/ingredients/")
