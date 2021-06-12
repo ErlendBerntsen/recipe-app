@@ -1,5 +1,9 @@
 package project.recipeapp.ingredient;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.fge.jsonpatch.JsonPatch;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.hateoas.CollectionModel;
@@ -11,9 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import project.recipeapp.*;
 
 
-import java.util.HashMap;
+
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -43,14 +46,9 @@ public class IngredientController {
     @PostMapping("/ingredients")
     public ResponseEntity<?> newIngredient(@RequestBody IngredientDTO ingredientDTO){
         if(unitRepository.findByNameIgnoreCase(ingredientDTO.getUnit()).isPresent()){
-            var ingredient = new Ingredient(
-                    ingredientDTO.getName(),
-                    ingredientDTO.getPrice(),
-                    ingredientDTO.getAmount(),
-                    unitRepository.findByNameIgnoreCase(ingredientDTO.getUnit()).get(),
-                    ingredientDTO.getCategory());
-
-            EntityModel<Ingredient> entityModel = assembler.toModel(ingredientRepository.save(ingredient));
+            var ingredient = new Ingredient();
+            fromIngredientDTOtoIngredient(ingredient,ingredientDTO);
+            EntityModel<Ingredient> entityModel = assembler.toModel(ingredient);
             return ResponseEntity
                     .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
                     .body(entityModel);
@@ -70,56 +68,32 @@ public class IngredientController {
         return assembler.toModel(ingredient);
     }
 
-
     @DeleteMapping("/ingredients/{id}")
     public ResponseEntity<?> deleteIngredient(@PathVariable Long id) {
         ingredientRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 
-
     @PatchMapping("/ingredients/{id}")
-    public ResponseEntity<?> editIngredient(@PathVariable Long id, @RequestBody Map<String, Object> newFields) {
-
+    public ResponseEntity<?> editIngredient(@PathVariable Long id, @RequestBody JsonPatch patch) throws Exception {
         var ingredient = ingredientRepository.findById(id).orElseThrow(() -> new IngredientNotFoundException(id));
-        updateFields(newFields, ingredient);
-
-        EntityModel<Ingredient> entityModel = assembler.toModel(ingredientRepository.save(ingredient));
-        return ResponseEntity
-                .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
-                .body(entityModel);
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode ingredientJsonNode = objectMapper.convertValue(ingredient, JsonNode.class);
+        ((ObjectNode)ingredientJsonNode).remove("id");
+        ((ObjectNode)ingredientJsonNode).put("unit", ingredientJsonNode.get("unit").get("name"));
+        ingredientJsonNode = patch.apply(ingredientJsonNode);
+        IngredientDTO ingredientDTO = objectMapper.convertValue(ingredientJsonNode, IngredientDTO.class);
+        fromIngredientDTOtoIngredient(ingredient, ingredientDTO);
+        return ResponseEntity.ok().body(assembler.toModel(ingredient));
     }
 
-
-    /*
-    This is an extremely brittle solution. It works as intended i think, but will most certainly break with changes to ingredient
-     */
-    private void updateFields (Map<String, Object> newFields, Ingredient ingredient){
-        for(String field : newFields.keySet()){
-            switch (field){
-                case "name":
-                    ingredient.setName((String) newFields.get(field));
-                    break;
-                case "price":
-                    ingredient.setPrice((double) newFields.get(field));
-                    break;
-                case "amount":
-                    ingredient.setAmount((double) newFields.get(field));
-                    break;
-                case "unit":
-                    HashMap<String, String> map = (HashMap) newFields.get(field);
-                    var unit = unitRepository.findByNameIgnoreCase(map.get("name"));
-                    if(unit.isPresent()){
-                        ingredient.setUnit(unit.get());
-                    }
-                    break;
-                case "category":
-                    ingredient.setCategory(Category.valueOf((String) newFields.get(field)));
-            }
-
-        }
+    private void fromIngredientDTOtoIngredient(Ingredient ingredient, IngredientDTO ingredientDTO){
+        ingredient.setName(ingredientDTO.getName());
+        ingredient.setPrice(ingredientDTO.getPrice());
+        ingredient.setAmount(ingredientDTO.getAmount());
+        ingredient.setUnit(unitRepository.findByNameIgnoreCase(ingredientDTO.getUnit()).get());
+        ingredient.setCategory(Category.getCategory(ingredientDTO.getCategory()));
+        ingredientRepository.save(ingredient);
     }
-
-
 
 }

@@ -20,5 +20,11 @@ public enum Category {
         return categoryName;
     }
 
+    public static Category getCategory(String categoryName){
+        for(Category category : Category.values()){
+            if(category.toString().equals(categoryName)) return category;
+        }
+        return Category.valueOf(categoryName);
+    }
 
 }

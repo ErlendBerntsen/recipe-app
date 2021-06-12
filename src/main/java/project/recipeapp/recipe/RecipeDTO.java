@@ -3,10 +3,10 @@ package project.recipeapp.recipe;
 import lombok.Data;
 
 import java.util.List;
-import java.util.Optional;
 
 @Data
 public class RecipeDTO {
+
     private String name;
     private int portions;
     private String description = "";

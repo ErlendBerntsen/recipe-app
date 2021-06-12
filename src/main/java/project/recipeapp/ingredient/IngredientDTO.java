@@ -11,9 +11,13 @@ public class IngredientDTO {
     private double price;
     private double amount;
     private String unit;
-    private Category category;
+    private String category;
 
-    public IngredientDTO(String name, double price, double amount, String unit, Category category){
+    public IngredientDTO(){
+
+    }
+
+    public IngredientDTO(String name, double price, double amount, String unit, String category){
         this.name = name;
         this.price = price;
         this.amount = amount;
