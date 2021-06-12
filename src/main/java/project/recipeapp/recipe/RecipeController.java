@@ -1,19 +1,21 @@
 package project.recipeapp.recipe;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.fge.jsonpatch.JsonPatch;
+import com.github.fge.jsonpatch.JsonPatchException;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import project.recipeapp.UnitRepository;
-import project.recipeapp.ingredient.Ingredient;
-import project.recipeapp.ingredient.IngredientModelAssembler;
 import project.recipeapp.ingredient.IngredientRepository;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -37,33 +39,7 @@ public class RecipeController {
     @PostMapping("/recipes")
     public ResponseEntity<?> newRecipe(@RequestBody RecipeDTO recipeDTO){
         var recipe = new Recipe();
-        recipe.setName(recipeDTO.getName());
-        recipe.setPortions(recipeDTO.getPortions());
-        recipe.setDescription(recipeDTO.getDescription());
-        recipe.setSteps(recipeDTO.getSteps());
-        recipe.setNotes(recipeDTO.getNotes());
-        recipe.setGlass(recipeDTO.getGlass());
-        recipe.setRating(recipeDTO.getRating());
-        recipe.setDifficulty(recipeDTO.getDifficulty());
-        List<RecipeIngredient> ingredients = new ArrayList<>();
-        for(RecipeIngredientDTO recipeIngredientDTO : recipeDTO.getIngredients()){
-            if(unitRepository.findByNameIgnoreCase(recipeIngredientDTO.getUnit()).isPresent()){
-                if(ingredientRepository.findByNameIgnoreCase(recipeIngredientDTO.getIngredient()).isPresent()){
-                    ingredients.add(new RecipeIngredient(
-                            recipeIngredientDTO.getName(),
-                            ingredientRepository.findByNameIgnoreCase(recipeIngredientDTO.getIngredient()).get(),
-                            recipeIngredientDTO.getAmount(),
-                            unitRepository.findByNameIgnoreCase(recipeIngredientDTO.getUnit()).get(),
-                            recipeIngredientDTO.isGarnish()));
-                }else{
-                    return new ResponseEntity<>("Could not create new recipe. No such ingredient exists", HttpStatus.BAD_REQUEST);
-                }
-
-            }else{
-                return new ResponseEntity<>("Could not create new recipe. No such unit exists", HttpStatus.BAD_REQUEST);
-            }
-        }
-        recipe.setIngredients(ingredients);
+        fromRecipeDTOtoRecipe(recipe, recipeDTO);
         recipeRepository.save(recipe);
         EntityModel<Recipe> entityModel = assembler.toModel(recipe);
         return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
@@ -91,55 +67,62 @@ public class RecipeController {
         return ResponseEntity.noContent().build();
     }
 
+
     @PatchMapping("/recipes/{id}")
-    public ResponseEntity<?> editRecipe(@PathVariable Long id, @RequestBody Map<String, Object> newFields) {
+    public ResponseEntity<?> editRecipe(@PathVariable Long id, @RequestBody JsonPatch patch)  {
         var recipe = recipeRepository.findById(id).orElseThrow(() -> new RecipeNotFoundException(id));
-        for(String field : newFields.keySet()){
-            switch (field){
-                case "name" :
-                    recipe.setName((String) newFields.get(field));
-                    break;
-                case "portions" :
-                    recipe.setPortions((int) newFields.get(field));
-                    break;
-                case "description" :
-                    recipe.setDescription((String) newFields.get(field));
-                    break;
-                case "steps" :
-                    recipe.setSteps((String) newFields.get(field));
-                    break;
-                case "notes" :
-                    recipe.setNotes((String) newFields.get(field));
-                    break;
-                case "glass" :
-                    recipe.setGlass((String) newFields.get(field));
-                    break;
-                case "rating" :
-                    recipe.setRating((double) newFields.get(field));
-                    break;
-                case "difficulty" :
-                    recipe.setDifficulty((double) newFields.get(field));
-                    break;
-                case "ingredients" :
-                    List<Map<String, Object>> ingredients = (List<Map<String, Object>>) newFields.get(field);
-                    for(int i = 0; i < ingredients.size(); i++){
-                        Map<String, Object> recipeIngredient = ingredients.get(i);
-                        for(String recipeIngredientField : recipeIngredient.keySet()){
-                            switch (recipeIngredientField) {
-                                case "name" :
-                                    recipe.getIngredients().get(i).setName((String) recipeIngredient.get(recipeIngredientField));
-                                    break;
-                            }
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode recipeJsonNode = objectMapper.convertValue(recipe,JsonNode.class);
+        formatRecipeJsonNode(recipeJsonNode);
+        try{
+            JsonNode editedRecipe = patch.apply(recipeJsonNode);
+            var recipeDTO = objectMapper.convertValue(editedRecipe, RecipeDTO.class);
+            fromRecipeDTOtoRecipe(recipe, recipeDTO);
+        }catch (JsonPatchException e){
+            return ResponseEntity.badRequest().build();
+        }
+        recipe.calculatePrice();
+        recipeRepository.save(recipe);
+        return ResponseEntity.ok().body(assembler.toModel(recipe));
+    }
 
-                        }
-                    }
+    private void formatRecipeJsonNode(JsonNode recipeJsonNode){
+        ((ObjectNode) recipeJsonNode).remove("id");
+        ((ObjectNode) recipeJsonNode).remove("price");
+        ArrayNode ingredients = (ArrayNode) recipeJsonNode.get("ingredients");
+        for(int i = 0; i < ingredients.size(); i++){
+            JsonNode ingredientName = ingredients.get(i).get("ingredient").get("name");
+            ((ObjectNode)ingredients.get(i)).set("ingredient", ingredientName);
 
+            JsonNode unitName = ingredients.get(i).get("unit").get("name");
+            ((ObjectNode)ingredients.get(i)).set("unit", unitName);
+        }
+        ((ObjectNode) recipeJsonNode).put("ingredients", ingredients);
+    }
 
-                    break;
+    private void fromRecipeDTOtoRecipe(Recipe recipe, RecipeDTO recipeDTO) {
+        recipe.setName(recipeDTO.getName());
+        recipe.setPortions(recipeDTO.getPortions());
+        recipe.setDescription(recipeDTO.getDescription());
+        recipe.setSteps(recipeDTO.getSteps());
+        recipe.setNotes(recipeDTO.getNotes());
+        recipe.setGlass(recipeDTO.getGlass());
+        recipe.setRating(recipeDTO.getRating());
+        recipe.setDifficulty(recipeDTO.getDifficulty());
+        List<RecipeIngredient> ingredients = new ArrayList<>();
+        for(RecipeIngredientDTO recipeIngredientDTO : recipeDTO.getIngredients()){
+            if(unitRepository.findByNameIgnoreCase(recipeIngredientDTO.getUnit()).isPresent()){
+                if(ingredientRepository.findByNameIgnoreCase(recipeIngredientDTO.getIngredient()).isPresent()){
+                    ingredients.add(new RecipeIngredient(
+                            recipeIngredientDTO.getName(),
+                            ingredientRepository.findByNameIgnoreCase(recipeIngredientDTO.getIngredient()).get(),
+                            recipeIngredientDTO.getAmount(),
+                            unitRepository.findByNameIgnoreCase(recipeIngredientDTO.getUnit()).get(),
+                            recipeIngredientDTO.isGarnish()));
+                }
             }
         }
-        recipeRepository.save(recipe);
-        return ResponseEntity.ok().body(recipe);
+        recipe.setIngredients(ingredients);
     }
 
 }

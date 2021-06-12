@@ -17,6 +17,7 @@ public class RecipeDTO {
     private double difficulty;
     private List<RecipeIngredientDTO> ingredients;
 
+
     public RecipeDTO(){
 
     }

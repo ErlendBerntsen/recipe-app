@@ -2,6 +2,8 @@ package project.recipeapp;
 
 
 
+import com.github.fge.jsonpatch.JsonPatch;
+import com.github.fge.jsonpatch.JsonPatchOperation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,8 +33,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -78,6 +79,8 @@ class RecipeControllerTest {
     private RecipeIngredientDTO raspberrySyrupDTO;
     private RecipeIngredientDTO eggWhiteDTO;
     private Unit milliLiter;
+    private Unit centiLiter;
+    private Unit liter;
 
     @BeforeEach
     void setUp(){
@@ -101,8 +104,8 @@ class RecipeControllerTest {
 
 
         milliLiter = new MilliLiter();
-        CentiLiter centiLiter = new CentiLiter();
-        Liter liter = new Liter();
+        centiLiter = new CentiLiter();
+        liter = new Liter();
 
         unitRepository.save(milliLiter);
         unitRepository.save(centiLiter);
@@ -343,127 +346,184 @@ class RecipeControllerTest {
         assertFalse(recipeRepository.findById(recipe.getId()).isPresent());
     }
 
+
     @Test
-    void recipeShouldBeEditedWithController(){
+    void allBasicRecipeFieldsShouldBeEditedWithJsonPatch()throws Exception{
         Recipe recipe = new Recipe("", new ArrayList<>());
         recipeRepository.save(recipe);
-        assertTrue(recipeRepository.findById(recipe.getId()).isPresent());
-        assertEquals("", recipeRepository.findById(recipe.getId()).get().getName());
-        Map<String, Object> map = new HashMap<>();
-        map.put("name", recipeName);
-        recipeController.editRecipe(recipe.getId(), map);
-        assertEquals(recipeName, recipeRepository.findById(recipe.getId()).get().getName());
-    }
-
-    void recipeShouldEditAllFieldWithController(){
-        Recipe recipe = new Recipe("", new ArrayList<>());
-        recipeRepository.save(recipe);
-        Map<String, Object> newFields = new HashMap<>();
-        newFields.put("name", recipeName);
-        portions = 2;
-        newFields.put("portions", portions);
-        newFields.put("steps", steps);
-        newFields.put("notes", notes);
-        newFields.put("glass", glass);
-        newFields.put("rating", rating);
-        newFields.put("difficulty", difficulty);
-        RecipeIngredient ginRI = new RecipeIngredient("Gin",gin, 45, milliLiter, false);
-        RecipeIngredient ljRI = new RecipeIngredient("Lemon Juice", lemonJuice, 22.5, milliLiter, false);
-        RecipeIngredient rsRI = new RecipeIngredient("Raspberry Syrup", raspberrySyrup, 22.5,milliLiter, false);
-        RecipeIngredient ewRI = new RecipeIngredient("Egg White", eggWhite, 15, milliLiter, false);
-        List<RecipeIngredient> ingredientList = new ArrayList<>();
-        ingredientList.add(ginRI);
-        ingredientList.add(ljRI);
-        ingredientList.add(rsRI);
-        ingredientList.add(ewRI);
-        newFields.put("ingredients", ingredientList);
-
-        var recipeFound=  recipeRepository.findById(recipe.getId());
-        assertTrue(recipeFound.isPresent());
-        assertNotEquals(recipeName, recipeFound.get().getName());
-        assertNotEquals(portions, recipeFound.get().getPortions());
-        assertNotEquals(steps, recipeFound.get().getSteps());
-        assertNotEquals(notes, recipeFound.get().getNotes());
-        assertNotEquals(glass, recipeFound.get().getGlass());
-        assertNotEquals(rating, recipeFound.get().getRating());
-        assertNotEquals(difficulty, recipeFound.get().getDifficulty());
-        assertNotEquals(ingredientList, recipeFound.get().getIngredients());
-
-
-        recipeController.editRecipe(recipe.getId(), newFields);
-
-        recipeFound=  recipeRepository.findById(recipe.getId());
-        assertTrue(recipeFound.isPresent());
-        assertEquals(recipeName, recipeFound.get().getName());
-        assertEquals(portions, recipeFound.get().getPortions());
-        assertEquals(steps, recipeFound.get().getSteps());
-        assertEquals(notes, recipeFound.get().getNotes());
-        assertEquals(glass, recipeFound.get().getGlass());
-        assertEquals(rating, recipeFound.get().getRating());
-        assertEquals(difficulty, recipeFound.get().getDifficulty());
-        assertEquals(ingredientList, recipeFound.get().getIngredients());
-
-    }
-
-    void recipeShouldEditAllFieldWithURIRequest()throws Exception{
-        Recipe recipe = new Recipe("", new ArrayList<>());
-        recipeRepository.save(recipe);
-        String jsonEdit = patchRequestToJson();
-
-        var recipeFound=  recipeRepository.findById(recipe.getId());
-        assertTrue(recipeFound.isPresent());
-        assertNotEquals(recipeName, recipeFound.get().getName());
-        assertNotEquals(portions, recipeFound.get().getPortions());
-        assertNotEquals(steps, recipeFound.get().getSteps());
-        assertNotEquals(notes, recipeFound.get().getNotes());
-        assertNotEquals(glass, recipeFound.get().getGlass());
-        assertNotEquals(rating, recipeFound.get().getRating());
-        assertNotEquals(difficulty, recipeFound.get().getDifficulty());
+        String newName = "new name";
+        int newPortions = 2;
+        String newDescription = "new description";
+        String newSteps = "new steps";
+        String newNotes = "new notes";
+        String newGlass = "new glass";
+        double newRating = 10.0;
+        double newDifficulty = 10.0;
+        String patch = "["
+                + "{\"op\":\"replace\",\"path\":\"/name\",\"value\":\"" + newName + "\"},"
+                + "{\"op\":\"replace\",\"path\":\"/portions\",\"value\":\"" + newPortions + "\"},"
+                + "{\"op\":\"replace\",\"path\":\"/description\",\"value\":\"" + newDescription + "\"},"
+                + "{\"op\":\"replace\",\"path\":\"/steps\",\"value\":\"" + newSteps + "\"},"
+                + "{\"op\":\"replace\",\"path\":\"/notes\",\"value\": \"" + newNotes + "\"},"
+                + "{\"op\":\"replace\",\"path\":\"/glass\",\"value\":\"" + newGlass + "\"},"
+                + "{\"op\":\"replace\",\"path\":\"/rating\",\"value\":\"" + newRating + "\"},"
+                + "{\"op\":\"replace\",\"path\":\"/difficulty\",\"value\":\"" + newDifficulty + "\"}]";
 
         MockHttpServletRequestBuilder builder =
-                MockMvcRequestBuilders.patch("/recipes/" + recipe.getId())
+                patch("/recipes/" + recipe.getId())
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .accept(MediaType.APPLICATION_JSON)
                         .characterEncoding("UTF-8")
-                        .content(jsonEdit);
+                        .content(patch);
 
         this.mockMvc.perform(builder)
                 .andDo(print())
-                .andExpect(status().is2xxSuccessful())
-                .andExpect(jsonPath("$.name", is(recipeName)))
-                .andExpect(jsonPath("$.portions", is(portions)))
-                .andExpect(jsonPath("$.steps", is(steps)))
-                .andExpect(jsonPath("$.notes", is(notes)))
-                .andExpect(jsonPath("$.glass", is(glass)))
-                .andExpect(jsonPath("$.rating", is(rating)))
-                .andExpect(jsonPath("$.difficulty", is(difficulty)))
-                .andExpect(jsonPath("$.ingredients[0].name", is(recipeName)));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name", is(newName)))
+                .andExpect(jsonPath("$.portions", is(newPortions)))
+                .andExpect(jsonPath("$.description", is(newDescription)))
+                .andExpect(jsonPath("$.steps", is(newSteps)))
+                .andExpect(jsonPath("$.notes", is(newNotes)))
+                .andExpect(jsonPath("$.glass", is(newGlass)))
+                .andExpect(jsonPath("$.rating", is(newRating)))
+                .andExpect(jsonPath("$.difficulty", is(newDifficulty)));
     }
 
-    private String patchRequestToJson(){
-        StringBuilder jsonRecipe = new StringBuilder();
-        jsonRecipe.append("{\"name\":\"").append(recipeName).append("\"")
-                .append(",\"portions\":").append(portions)
-                .append(",\"steps\":").append("\"").append(steps).append("\"")
-                .append(",\"notes\":").append("\"").append(notes).append("\"")
-                .append(",\"glass\":").append("\"").append(glass).append("\"")
-                .append(",\"rating\":").append(rating)
-                .append(",\"difficulty\":").append(difficulty)
-                .append(",\"ingredients\":[");
-        for(RecipeIngredientDTO ingredientDTO : ingredients){
-            jsonRecipe.append("{\"name\":\"").append(ingredientDTO.getName()).append("\"")
-                    .append(",\"ingredient\":\"").append(ingredientDTO.getIngredient()).append("\"")
-                    .append(",\"amount\":").append(ingredientDTO.getAmount())
-                    .append(",\"unit\":\"").append(ingredientDTO.getUnit()).append("\"")
-                    .append(",\"isgarnish\":").append(ingredientDTO.isGarnish()).append("},");
-        }
+    @Test
+    void allRecipeIngredientFieldsShouldBeEditedWithJsonPatch()throws Exception{
+        recipeController.newRecipe(recipeDTO);
+        long id = recipeRepository.findByNameIgnoreCase(recipeDTO.getName()).get().getId();
+        Ingredient vodka = new Ingredient("Absolut Vodka", 464.90, 1, liter, Category.VODKA);
+        ingredientRepository.save(vodka);
+        String newName = "newname";
+        String newIngredient = vodka.getName();
+        double newAmount = 100;
+        String newUnit = centiLiter.getName();
+        boolean isGarnish = true;
+        String patch = "["
+                + "{\"op\":\"replace\",\"path\":\"/ingredients/0/name\",\"value\":\"" + newName + "\"},"
+                + "{\"op\":\"replace\",\"path\":\"/ingredients/0/ingredient\",\"value\":\"" + newIngredient + "\"},"
+                + "{\"op\":\"replace\",\"path\":\"/ingredients/0/amount\",\"value\":\"" + newAmount + "\"},"
+                + "{\"op\":\"replace\",\"path\":\"/ingredients/0/unit\",\"value\":\"" + newUnit + "\"},"
+                + "{\"op\":\"replace\",\"path\":\"/ingredients/0/garnish\",\"value\":\"" + isGarnish + "\"}"
+                + "]";
 
-        if(!ingredients.isEmpty()){
-            jsonRecipe.delete(jsonRecipe.length()-1, jsonRecipe.length()); //Delete last comma of list
-        }
-        jsonRecipe.append("]}");
-        return jsonRecipe.toString();
+        MockHttpServletRequestBuilder builder =
+                patch("/recipes/" + id)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .characterEncoding("UTF-8")
+                        .content(patch);
+
+        this.mockMvc.perform(builder)
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.ingredients[0].name", is(newName)))
+                .andExpect(jsonPath("$.ingredients[0].ingredient.name", is(newIngredient)))
+                .andExpect(jsonPath("$.ingredients[0].amount", is(newAmount)))
+                .andExpect(jsonPath("$.ingredients[0].unit.name", is(newUnit)))
+                .andExpect(jsonPath("$.ingredients[0].garnish", is(isGarnish)));
     }
+
+    @Test
+    void ingredientShouldBeAddedToRecipe() throws Exception{
+        recipeController.newRecipe(recipeDTO);
+        long id = recipeRepository.findByNameIgnoreCase(recipeDTO.getName()).get().getId();
+        Ingredient vodka = new Ingredient("Absolut Vodka", 464.90, 1, liter, Category.VODKA);
+        ingredientRepository.save(vodka);
+        String newIngredient = "{\"name\":\"Vodka\""
+                + ",\"ingredient\":\"" + vodka.getName() + "\""
+                + ",\"amount\":" + 60
+                + ",\"unit\":\"" + "Milliliter" + "\""
+                + ",\"garnish\":" + false + "}";
+        String patch = "[{\"op\":\"add\",\"path\":\"/ingredients/-\",\"value\":" + newIngredient + "}]";
+
+
+        MockHttpServletRequestBuilder builder =
+                patch("/recipes/" + id)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .characterEncoding("UTF-8")
+                        .content(patch);
+
+        this.mockMvc.perform(builder)
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.ingredients[4].ingredient.name", is(vodka.getName())));
+    }
+
+    @Test
+    void ingredientShouldBeRemovedFromRecipe() throws Exception{
+        recipeController.newRecipe(recipeDTO);
+        long id = recipeRepository.findByNameIgnoreCase(recipeDTO.getName()).get().getId();
+        String patch = "[{\"op\":\"remove\",\"path\":\"/ingredients/0\"}]";
+
+
+        MockHttpServletRequestBuilder builder =
+                patch("/recipes/" + id)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .characterEncoding("UTF-8")
+                        .content(patch);
+
+        this.mockMvc.perform(builder)
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.ingredients", hasSize(3)))
+                .andExpect(jsonPath("$.ingredients[0].ingredient.name", is(lemonJuice.getName())));
+    }
+
+    @Test
+    void ingredientPriceShouldBeUpdated() throws Exception{
+        Recipe recipe = new Recipe("", new ArrayList<>());
+        recipeRepository.save(recipe);
+
+
+        Ingredient vodka = new Ingredient("Absolut Vodka", 464.90, 1, liter, Category.VODKA);
+        ingredientRepository.save(vodka);
+        String newIngredient = "{\"name\":\"Vodka\""
+                + ",\"ingredient\":\"" + vodka.getName() + "\""
+                + ",\"amount\":" + vodka.getAmount()
+                + ",\"unit\":\"" + vodka.getUnit().getName() + "\""
+                + ",\"garnish\":" + false + "}";
+        String patch = "[{\"op\":\"add\",\"path\":\"/ingredients/-\",\"value\":" + newIngredient + "}]";
+        double expectedPrice = Math.round(vodka.getPrice());
+
+        MockHttpServletRequestBuilder builder =
+                patch("/recipes/" + recipe.getId())
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .characterEncoding("UTF-8")
+                        .content(patch);
+
+        this.mockMvc.perform(builder)
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.price", is(expectedPrice)));
+    }
+
+    @Test
+    void editingRecipeResponseShouldContainLinks()throws Exception{
+        Recipe recipe = new Recipe("", new ArrayList<>());
+        recipeRepository.save(recipe);
+        String newName = "new name";
+        String patch = "[{\"op\":\"replace\",\"path\":\"/name\",\"value\":\"" + newName + "\"}]";
+        String aggregateRootLink = "http://localhost/recipes";
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.patch("/recipes/" + recipe.getId())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON)
+                .characterEncoding("UTF-8")
+                .content(patch);
+
+        this.mockMvc.perform(request)
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath( "$._links.self.href",
+                        is (aggregateRootLink + "/" + recipe.getId())))
+                .andExpect(jsonPath( "$._links.recipes.href", is (aggregateRootLink)));
+    }
+
 
 
 }
