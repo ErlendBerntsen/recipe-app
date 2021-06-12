@@ -55,6 +55,7 @@ public class Recipe {
     }
 
     public void calculatePrice(){
+        price = 0;
         for(RecipeIngredient recipeIngredient : ingredients){
             Unit recipeIngredientUnit = recipeIngredient.getUnit();
             Ingredient ingredient = recipeIngredient.getIngredient();
