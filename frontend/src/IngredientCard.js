@@ -5,8 +5,8 @@ class IngredientCard extends React.Component{
     render(){
         const ingredient = this.props.ingredient;
         return(
-            <Card style={{ width: '16rem' }}>
-                <Card.Img variant="top" src="./5.jpg" alt="Ingredient image"/>
+            <Card style={{ width: '4rem' }}>
+                <Card.Img variant="top" src={"./" + ingredient.id + ".jpg"}  height="300" alt="Ingredient image"/>
                 <Card.Body>
                     <Card.Title>{ingredient.name}</Card.Title>
                     <Card.Text>
