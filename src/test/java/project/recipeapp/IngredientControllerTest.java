@@ -48,6 +48,7 @@ class IngredientControllerTest {
 
     private IngredientModelAssembler ingredientAssembler;
     private IngredientController ingredientController;
+    private String baseURI;
 
 
     private IngredientDTO ingredient;
@@ -80,6 +81,8 @@ class IngredientControllerTest {
         ingredientController = new IngredientController(ingredientRepository, unitRepository, ingredientAssembler);
         ingredientController.newIngredient(ingredient);
         id = ingredientRepository.findByNameIgnoreCase(ingredient.getName()).get().getId();
+        baseURI = "/api/ingredients/";
+
     }
 
 
@@ -87,7 +90,7 @@ class IngredientControllerTest {
     void ingredientShouldBeCreatedWithController() throws  Exception{
         long nrOfIngredients = ingredientRepository.count();
         ingredientController.newIngredient(ingredient);
-        this.mockMvc.perform(get("/ingredients/" ))
+        this.mockMvc.perform(get(baseURI))
                 .andDo(print())
                 .andExpect(status().isOk());
         assertEquals(nrOfIngredients + 1, ingredientRepository.count());
@@ -96,7 +99,7 @@ class IngredientControllerTest {
     @Test
     void twoIngredientsShouldBeCreatedWithController() throws Exception{
         ingredientController.newIngredient(new IngredientDTO("Sugar", 22.90, 1000, "Gram", Category.MISC.toString()));
-        this.mockMvc.perform(get("/ingredients"))
+        this.mockMvc.perform(get(baseURI))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -112,7 +115,7 @@ class IngredientControllerTest {
         String junitResponse = ",\"unit\":{\"name\":\"" + unit + "\",\"abbreviation\":\"cl\",\"ratioToMainUnit\":100.0}";
 
         MockHttpServletRequestBuilder builder =
-                MockMvcRequestBuilders.post("/ingredients/")
+                MockMvcRequestBuilders.post(baseURI)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .accept(MediaType.APPLICATION_JSON)
                         .characterEncoding("UTF-8")
@@ -130,16 +133,17 @@ class IngredientControllerTest {
 
     @Test
     void responseShouldContainSelfLink() throws Exception{
-        String URI = "\"http://localhost/ingredients/" + id + "\"";
-        this.mockMvc.perform(get("/ingredients/" + id))
+        String URI = "\"http://localhost" + baseURI + id + "\"";
+        this.mockMvc.perform(get(baseURI + id))
                 .andDo(print())
                 .andExpect(content().string(containsString(URI)));
     }
 
     @Test
     void responseShouldContainAggregateRootLink() throws Exception{
-        String URI = "\"http://localhost/ingredients\"";
-        this.mockMvc.perform(get("/ingredients/" + id))
+        String URI = "\"http://localhost" + baseURI;
+        URI = URI.substring(0, URI.length()-1) + "\"";
+        this.mockMvc.perform(get(baseURI + id))
                 .andDo(print())
                 .andExpect(content().string(containsString(URI)));
     }
@@ -160,7 +164,7 @@ class IngredientControllerTest {
     void ingredientNotFoundShouldHaveAppropriateErrorMessageWithURIRequest()throws Exception{
         long badId = -1L;
         String errorMessage = "Could not find ingredient " + badId;
-        this.mockMvc.perform(get("/ingredients/" + badId))
+        this.mockMvc.perform(get(baseURI + badId))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$", is(errorMessage)));
@@ -170,20 +174,20 @@ class IngredientControllerTest {
     void ingredientShouldBeDeletedByController(){
         assertTrue(ingredientRepository.findById(id).isPresent());
         ingredientController.deleteIngredient(id);
-        assertTrue(ingredientRepository.findById(id).isEmpty());
+        assertFalse(ingredientRepository.findById(id).isPresent());
     }
 
     @Test
     void ingredientShouldBeDeletedByRequest() throws Exception{
-        this.mockMvc.perform(get("/ingredients/" + id))
+        this.mockMvc.perform(get(baseURI + id))
                 .andDo(print())
                 .andExpect(status().isOk());
 
-        this.mockMvc.perform(delete("/ingredients/" + id))
+        this.mockMvc.perform(delete(baseURI + id))
                 .andDo(print())
                 .andExpect(status().is2xxSuccessful());
 
-        this.mockMvc.perform(get("/ingredients/" + id))
+        this.mockMvc.perform(get(baseURI + id))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -213,7 +217,7 @@ class IngredientControllerTest {
                 + "{\"op\":\"replace\",\"path\":\"/category\",\"value\":\"" + newCategory + "\"}]";
 
         MockHttpServletRequestBuilder builder =
-                MockMvcRequestBuilders.patch("/ingredients/" + id)
+                MockMvcRequestBuilders.patch(baseURI + id)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .accept(MediaType.APPLICATION_JSON)
                         .characterEncoding("UTF-8")
@@ -232,12 +236,13 @@ class IngredientControllerTest {
     @Test
     void patchResponseShouldContainLinks()throws Exception{
         String newName = "new name";
-        String aggregateRootLink = "http://localhost/ingredients";
+        String aggregateRootLink = "http://localhost" + baseURI;
+        aggregateRootLink = aggregateRootLink.substring(0, aggregateRootLink.length()-1);
         String patch = "["
                 + "{\"op\":\"replace\",\"path\":\"/name\",\"value\":\"" + newName + "\"}]";
 
         MockHttpServletRequestBuilder builder =
-                MockMvcRequestBuilders.patch("/ingredients/" + id)
+                MockMvcRequestBuilders.patch(baseURI + id)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .accept(MediaType.APPLICATION_JSON)
                         .characterEncoding("UTF-8")

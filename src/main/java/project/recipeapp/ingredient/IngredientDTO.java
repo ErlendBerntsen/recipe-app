@@ -1,7 +1,6 @@
 package project.recipeapp.ingredient;
 
 import lombok.Data;
-import project.recipeapp.Category;
 
 @Data
 public class IngredientDTO {

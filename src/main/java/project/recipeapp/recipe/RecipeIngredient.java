@@ -4,7 +4,6 @@ import lombok.Data;
 import project.recipeapp.ingredient.Ingredient;
 import project.recipeapp.units.Unit;
 
-
 import javax.persistence.Embeddable;
 import javax.persistence.ManyToOne;
 

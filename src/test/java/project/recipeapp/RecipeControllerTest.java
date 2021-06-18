@@ -52,6 +52,7 @@ class RecipeControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+    String baseURI;
 
     private RecipeModelAssembler assembler;
     private RecipeDTO recipeDTO;
@@ -84,12 +85,11 @@ class RecipeControllerTest {
 
 
         recipeName = "Clover Club";
-        steps = """
-                \t1. Combine all the ingredients into your cocktail
-                \t2. Dry shake (without ice)
-                \t3. Wet shake (with ice)
-                \t4. Strain into a chilled coupe
-                \t5. Garnish with skewered raspberries""";
+        steps = "\t1. Combine all the ingredients into your cocktail"+
+                "\t2. Dry shake (without ice)"+
+                "\t3. Wet shake (with ice)"+
+                "\t4. Strain into a chilled coupe"+
+                "\t5. Garnish with skewered raspberries";
         description = "A sour and sweet cocktail from the early 1900's with taste of lemon and raspberries.";
         glass = "Coupe";
         rating = 7;
@@ -129,6 +129,7 @@ class RecipeControllerTest {
         recipeDTO = new RecipeDTO(recipeName, 1, description, steps, notes, glass, rating, difficulty, ingredients);
         assembler = new RecipeModelAssembler();
         recipeController = new RecipeController(recipeRepository, unitRepository, ingredientRepository, assembler);
+        baseURI = "/api/recipes/";
     }
 
     @Test
@@ -156,7 +157,7 @@ class RecipeControllerTest {
     void recipeShouldBeCreatedWithURIRequest() throws Exception{
         String jsonRecipe = toJson(recipeName, ingredients);
 
-        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post("/recipes")
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post(baseURI)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .accept(MediaType.APPLICATION_JSON)
                 .characterEncoding("UTF-8")
@@ -201,7 +202,7 @@ class RecipeControllerTest {
     void allRecipesShouldBeReturnedWithURIRequest()throws Exception{
         assertEquals(recipeRepository.count(), recipeController.all().getContent().size());
         recipeController.newRecipe(recipeDTO);
-        this.mockMvc.perform(get("/recipes"))
+        this.mockMvc.perform(get(baseURI))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$._embedded.recipeList", hasSize((int) recipeRepository.count())));
@@ -218,7 +219,7 @@ class RecipeControllerTest {
     void oneRecipeShouldBeReturnedWithURIRequest() throws Exception{
         Recipe recipe = new Recipe("", new ArrayList<>());
         recipeRepository.save(recipe);
-        this.mockMvc.perform(get("/recipes/" + recipe.getId()))
+        this.mockMvc.perform(get(baseURI + recipe.getId()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath( "$.id", is (recipe.getId().intValue())));
@@ -228,8 +229,8 @@ class RecipeControllerTest {
     void recipeShouldContainSelfLink()throws Exception{
         Recipe recipe = new Recipe("", new ArrayList<>());
         recipeRepository.save(recipe);
-        String selfLink = "http://localhost/recipes/" + recipe.getId();
-        this.mockMvc.perform(get("/recipes/" + recipe.getId()))
+        String selfLink = "http://localhost" + baseURI + recipe.getId();
+        this.mockMvc.perform(get(baseURI + recipe.getId()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath( "$._links.self.href", is (selfLink)));
@@ -239,8 +240,9 @@ class RecipeControllerTest {
     void recipeShouldContainAggregateRootLink()throws Exception{
         Recipe recipe = new Recipe("", new ArrayList<>());
         recipeRepository.save(recipe);
-        String aggregateRootLink = "http://localhost/recipes";
-        this.mockMvc.perform(get("/recipes/" + recipe.getId()))
+        String aggregateRootLink = "http://localhost" + baseURI;
+        aggregateRootLink = aggregateRootLink.substring(0, aggregateRootLink.length()-1);
+        this.mockMvc.perform(get(baseURI + recipe.getId()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath( "$._links.recipes.href", is (aggregateRootLink)));
@@ -248,8 +250,9 @@ class RecipeControllerTest {
 
     @Test
     void listOfAllRecipesShouldContainSelfLink()throws Exception{
-        String selfLink = "http://localhost/recipes";
-        this.mockMvc.perform(get("/recipes"))
+        String selfLink = "http://localhost" + baseURI;
+        selfLink = selfLink.substring(0, selfLink.length()-1);
+        this.mockMvc.perform(get(baseURI))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath( "$._links.self.href", is (selfLink)));
@@ -263,9 +266,10 @@ class RecipeControllerTest {
         recipeRepository.save(recipe2);
 
         String path = "$._embedded.recipeList[";
-        String aggregateRootLink = "http://localhost/recipes";
+        String aggregateRootLink = "http://localhost" + baseURI;
+        aggregateRootLink = aggregateRootLink.substring(0, aggregateRootLink.length()-1);
 
-        this.mockMvc.perform(get("/recipes"))
+        this.mockMvc.perform(get(baseURI))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath(path +   "0]._links.self.href",
@@ -282,9 +286,11 @@ class RecipeControllerTest {
     void creatingRecipeResponseShouldContainLinks()throws Exception{
         String jsonRecipe = toJson(recipeName, new ArrayList<>());
 
-        String aggregateRootLink = "http://localhost/recipes";
+        String aggregateRootLink = "http://localhost" + baseURI;
+        aggregateRootLink = aggregateRootLink.substring(0, aggregateRootLink.length()-1);
 
-        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post("/recipes")
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post(baseURI)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .accept(MediaType.APPLICATION_JSON)
                 .characterEncoding("UTF-8")
@@ -313,7 +319,7 @@ class RecipeControllerTest {
     void recipeNotFoundShouldHaveAppropriateErrorMessageWithURIRequest()throws Exception{
         long badId = -1L;
         String errorMessage = "Could not find recipe " + badId;
-        this.mockMvc.perform(get("/recipes/" + badId))
+        this.mockMvc.perform(get(baseURI + badId))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$", is(errorMessage)));
@@ -334,7 +340,7 @@ class RecipeControllerTest {
         Recipe recipe = new Recipe("", new ArrayList<>());
         recipeRepository.save(recipe);
         assertTrue(recipeRepository.findById(recipe.getId()).isPresent());
-        this.mockMvc.perform(delete("/recipes/" + recipe.getId()))
+        this.mockMvc.perform(delete(baseURI + recipe.getId()))
                 .andDo(print())
                 .andExpect(status().is2xxSuccessful());
         assertFalse(recipeRepository.findById(recipe.getId()).isPresent());
@@ -364,7 +370,7 @@ class RecipeControllerTest {
                 + "{\"op\":\"replace\",\"path\":\"/difficulty\",\"value\":\"" + newDifficulty + "\"}]";
 
         MockHttpServletRequestBuilder builder =
-                patch("/recipes/" + recipe.getId())
+                patch(baseURI + recipe.getId())
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .accept(MediaType.APPLICATION_JSON)
                         .characterEncoding("UTF-8")
@@ -403,7 +409,7 @@ class RecipeControllerTest {
                 + "]";
 
         MockHttpServletRequestBuilder builder =
-                patch("/recipes/" + id)
+                patch(baseURI + id)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .accept(MediaType.APPLICATION_JSON)
                         .characterEncoding("UTF-8")
@@ -434,7 +440,7 @@ class RecipeControllerTest {
 
 
         MockHttpServletRequestBuilder builder =
-                patch("/recipes/" + id)
+                patch(baseURI + id)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .accept(MediaType.APPLICATION_JSON)
                         .characterEncoding("UTF-8")
@@ -454,7 +460,7 @@ class RecipeControllerTest {
 
 
         MockHttpServletRequestBuilder builder =
-                patch("/recipes/" + id)
+                patch(baseURI + id)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .accept(MediaType.APPLICATION_JSON)
                         .characterEncoding("UTF-8")
@@ -484,7 +490,7 @@ class RecipeControllerTest {
         double expectedPrice = Math.round(vodka.getPrice());
 
         MockHttpServletRequestBuilder builder =
-                patch("/recipes/" + recipe.getId())
+                patch(baseURI + recipe.getId())
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .accept(MediaType.APPLICATION_JSON)
                         .characterEncoding("UTF-8")
@@ -502,9 +508,11 @@ class RecipeControllerTest {
         recipeRepository.save(recipe);
         String newName = "new name";
         String patch = "[{\"op\":\"replace\",\"path\":\"/name\",\"value\":\"" + newName + "\"}]";
-        String aggregateRootLink = "http://localhost/recipes";
+        String aggregateRootLink = "http://localhost" + baseURI;
+        aggregateRootLink = aggregateRootLink.substring(0, aggregateRootLink.length()-1);
 
-        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.patch("/recipes/" + recipe.getId())
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.patch(baseURI + recipe.getId())
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .accept(MediaType.APPLICATION_JSON)
                 .characterEncoding("UTF-8")

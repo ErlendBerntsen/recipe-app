@@ -1,7 +1,10 @@
 package project.recipeapp.units;
 
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
 
 @Entity
 @Inheritance

@@ -6,13 +6,10 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 import project.recipeapp.UnitRepository;
 import project.recipeapp.ingredient.IngredientRepository;
@@ -25,12 +22,13 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @CrossOrigin
+@RequestMapping("/api")
 public class RecipeController {
 
-    private RecipeRepository recipeRepository;
-    private UnitRepository unitRepository;
-    private IngredientRepository ingredientRepository;
-    private RecipeModelAssembler assembler;
+    private final RecipeRepository recipeRepository;
+    private final UnitRepository unitRepository;
+    private final IngredientRepository ingredientRepository;
+    private final RecipeModelAssembler assembler;
 
     public RecipeController(RecipeRepository recipeRepository, UnitRepository unitRepository,
                             IngredientRepository ingredientRepository, RecipeModelAssembler assembler){

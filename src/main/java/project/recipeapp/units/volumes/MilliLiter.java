@@ -6,9 +6,9 @@ import javax.persistence.Entity;
 @Entity
 public class MilliLiter extends Volume {
 
-    private String name;
-    private String abbreviation;
-    private double ratioToMainUnit;
+    private final String name;
+    private final String abbreviation;
+    private final double ratioToMainUnit;
 
     public MilliLiter(){
         name = "Milliliter";

@@ -56,6 +56,11 @@ class RecipeTest {
 
     @BeforeEach
     void setup(){
+        recipeRepository.deleteAll();
+        ingredientRepository.deleteAll();
+        unitRepository.deleteAll();
+
+
         name = "Clover Club";
         portions = 1;
         steps = "\t1. Combine all the ingredients into your cocktail\n"
@@ -74,7 +79,6 @@ class RecipeTest {
         MilliLiter milliLiter = new MilliLiter();
         CentiLiter centiLiter = new CentiLiter();
         Liter liter = new Liter();
-        unitRepository.deleteAll();
         unitRepository.save(milliLiter);
         unitRepository.save(centiLiter);
         unitRepository.save(liter);
@@ -84,7 +88,6 @@ class RecipeTest {
         raspberrySyrup = new Ingredient("Raspberry Syrup", 20, 20, centiLiter, Category.JUICE);
         eggWhite = new Ingredient("Egg White", 5, 30, milliLiter , Category.FRIDGE_PANTRY);
 
-        ingredientRepository.deleteAll();
         ingredientRepository.save(gin);
         ingredientRepository.save(lemonJuice);
         ingredientRepository.save(raspberrySyrup);

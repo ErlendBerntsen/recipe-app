@@ -14,8 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import project.recipeapp.*;
 
-
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,6 +22,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @CrossOrigin
+@RequestMapping("/api")
 public class IngredientController {
     private final IngredientRepository ingredientRepository;
     private final UnitRepository unitRepository;
@@ -35,12 +34,12 @@ public class IngredientController {
         this.assembler = assembler;
     }
 
+    @CrossOrigin
     @GetMapping("/ingredients")
     public CollectionModel<EntityModel<Ingredient>> all(){
         List<EntityModel<Ingredient>> ingredients = ingredientRepository.findAll().stream()
                 .map(assembler::toModel)
                 .collect(Collectors.toList());
-
         return CollectionModel.of(ingredients, linkTo(methodOn(IngredientController.class).all()).withSelfRel());
     }
 

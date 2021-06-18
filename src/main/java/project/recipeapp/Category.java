@@ -10,7 +10,7 @@ public enum Category {
     JUICE("Juice"),
     FRIDGE_PANTRY("Fridge/Pantry");
 
-    private String categoryName;
+    private final String categoryName;
     Category(String categoryName){
         this.categoryName = categoryName;
     }
