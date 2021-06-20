@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Route, Switch} from "react-router-dom";
-import HomePage from "./HomePage";
-import IngredientsPage from "./IngredientsPage";
+import HomePage from "./pages/HomePage";
+import IngredientsPage from "./pages/IngredientsPage";
 class App extends Component {
   render() {
     return (

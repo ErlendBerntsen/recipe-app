@@ -1,13 +1,12 @@
 import React from "react";
-import {Link} from "react-router-dom";
+import {MasterPage} from "./MasterPage";
 
 class HomePage extends React.Component{
     render(){
         return (
             <div>
+                <MasterPage />
                 <h1>This is the homepage!</h1>
-                <br/>
-                <Link to="/ingredients"> Go to ingredients page</Link>
             </div>
         );
     }

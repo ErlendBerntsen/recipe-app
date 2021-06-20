@@ -6,6 +6,6 @@ import project.recipeapp.units.Unit;
 import java.util.Optional;
 
 public interface UnitRepository extends JpaRepository<Unit, Long> {
-    Optional<Unit> findByNameIgnoreCase(String name);
+    Optional<Unit> findByNameIgnoreCaseOrAbbreviationIgnoreCase(String name, String abbreviation);
 
 }

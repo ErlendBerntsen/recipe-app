@@ -114,13 +114,13 @@ public class RecipeController {
         recipe.setDifficulty(recipeDTO.getDifficulty());
         List<RecipeIngredient> ingredients = new ArrayList<>();
         for(RecipeIngredientDTO recipeIngredientDTO : recipeDTO.getIngredients()){
-            if(unitRepository.findByNameIgnoreCase(recipeIngredientDTO.getUnit()).isPresent()){
+            if(unitRepository.findByNameIgnoreCaseOrAbbreviationIgnoreCase(recipeIngredientDTO.getUnit(),recipeIngredientDTO.getUnit()).isPresent()){
                 if(ingredientRepository.findByNameIgnoreCase(recipeIngredientDTO.getIngredient()).isPresent()){
                     ingredients.add(new RecipeIngredient(
                             recipeIngredientDTO.getName(),
                             ingredientRepository.findByNameIgnoreCase(recipeIngredientDTO.getIngredient()).get(),
                             recipeIngredientDTO.getAmount(),
-                            unitRepository.findByNameIgnoreCase(recipeIngredientDTO.getUnit()).get(),
+                            unitRepository.findByNameIgnoreCaseOrAbbreviationIgnoreCase(recipeIngredientDTO.getUnit(), recipeIngredientDTO.getUnit()).get(),
                             recipeIngredientDTO.isGarnish()));
                 }
             }

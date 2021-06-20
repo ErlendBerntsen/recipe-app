@@ -45,7 +45,7 @@ public class IngredientController {
 
     @PostMapping("/ingredients")
     public ResponseEntity<?> newIngredient(@RequestBody IngredientDTO ingredientDTO){
-        if(unitRepository.findByNameIgnoreCase(ingredientDTO.getUnit()).isPresent()){
+        if(unitRepository.findByNameIgnoreCaseOrAbbreviationIgnoreCase(ingredientDTO.getUnit(), ingredientDTO.getUnit()).isPresent()){
             var ingredient = new Ingredient();
             fromIngredientDTOtoIngredient(ingredient,ingredientDTO);
             EntityModel<Ingredient> entityModel = assembler.toModel(ingredient);
@@ -91,7 +91,7 @@ public class IngredientController {
         ingredient.setName(ingredientDTO.getName());
         ingredient.setPrice(ingredientDTO.getPrice());
         ingredient.setAmount(ingredientDTO.getAmount());
-        ingredient.setUnit(unitRepository.findByNameIgnoreCase(ingredientDTO.getUnit()).get());
+        ingredient.setUnit(unitRepository.findByNameIgnoreCaseOrAbbreviationIgnoreCase(ingredientDTO.getUnit(), ingredientDTO.getUnit()).get());
         ingredient.setCategory(Category.getCategory(ingredientDTO.getCategory()));
         ingredientRepository.save(ingredient);
     }
