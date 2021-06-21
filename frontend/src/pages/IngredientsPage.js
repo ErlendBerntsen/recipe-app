@@ -42,7 +42,6 @@ export default function IngredientsPage() {
             <br/>
             {
                 <>
-                    {isLoading? "fetching units" : "got units"}
                     {unitsFetchDisplay}
                     <br/>
                     <br/>
