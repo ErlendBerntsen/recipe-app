@@ -10,4 +10,13 @@ export class Ingredient{
     }
 }
 
-export default Ingredient
+export class IngredientDTO{
+    constructor(name, price, amount, unit, category) {
+        this.name = name;
+        this.price = price;
+        this.amount = amount;
+        this.unit = unit;
+        this.category = category;
+    }
+}
+
