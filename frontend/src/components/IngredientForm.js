@@ -12,7 +12,11 @@ export default function IngredientForm(props){
     const [category, setCategory] = useState(isCreating? '' : props.ingredient.category)
     const [alert, setAlert] = useState(null);
 
-    const validations = [name !== '', price >= 0 && price !== null, amount >= 1 && amount !== null, unit !== '', category !== '' && category !== 'Choose category']
+    const chooseUnit = "Choose unit";
+    const chooseCategory = "Choose category";
+
+    const validations = [name !== '', price >= 0 && price !== null, amount >= 1 && amount !== null
+        , unit !== '' && unit !== chooseUnit, category !== '' && category !== chooseCategory]
     function handleClick(){
         isCreating? handleCreation() : handleEdit()
     }
@@ -72,9 +76,10 @@ export default function IngredientForm(props){
 
                 <Form.Group as={Col} controlId="formUnit">
                     <Form.Label>Unit</Form.Label>
-                    <Form.Control as="select" defaultValue={unit}
+                    <Form.Control as="select" defaultValue={isCreating? chooseUnit : unit}
                                   onChange={(event) => setUnit(event.target.value)}
                                   isValid={validations[3]}>
+                        <option>{chooseUnit}</option>
                         {props.units}
                     </Form.Control>
                 </Form.Group>
@@ -84,10 +89,10 @@ export default function IngredientForm(props){
             }
             <Form.Group controlId="formCategory">
                 <Form.Label>Category</Form.Label>
-                <Form.Control as="select" defaultValue={isCreating? "Choose category" : category}
+                <Form.Control as="select" defaultValue={isCreating? chooseCategory : category}
                               onChange={(event) => setCategory(event.target.value)}
                               isValid={validations[4]}>>
-                    <option>Choose category</option>
+                    <option>{chooseCategory}</option>
                     <option>RUM</option>
                     <option>VODKA</option>
                     <option>MISC</option>

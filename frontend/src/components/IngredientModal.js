@@ -1,6 +1,8 @@
 import React, {useState} from "react";
 import { Button, Modal} from "react-bootstrap";
 import IngredientForm from "./IngredientForm";
+import IconButton from "@material-ui/core/IconButton";
+import {Edit} from "@material-ui/icons";
 
 export default function IngredientModal(props){
     const [show, setShow] = useState(false);
@@ -14,11 +16,12 @@ export default function IngredientModal(props){
         return <option>{unit.abbreviation}</option>
     })
 
+    const button = props.edit? <IconButton onClick={handleShow}><Edit/></IconButton>
+        : <Button variant={color} size={size} onClick={handleShow}>{text}</Button>
+
     return (
         <>
-            <Button variant={color} size={size} onClick={handleShow}>
-                {text}
-            </Button>
+            {button}
             <Modal show={show} onHide={handleClose}>
                 <Modal.Header closeButton>
                     <Modal.Title>{text}</Modal.Title>

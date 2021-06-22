@@ -1,9 +1,9 @@
 import React from "react";
-import {Ingredient} from "../api/Classes";
+import {Ingredient, IngredientDTO} from "../api/Classes";
 import IngredientCard from "../components/IngredientCard";
 import {CardDeck} from "react-bootstrap";
 import {MasterPage} from "./MasterPage";
-import {getAllIngredients, getAllUnits} from "../api/Methods";
+import {createNewIngredient, getAllIngredients, getAllUnits} from "../api/Methods";
 import useSWR from 'swr'
 import IngredientModal from "../components/IngredientModal";
 
@@ -16,16 +16,26 @@ export default function IngredientsPage() {
         ingredientsFetchDisplay = GetIngredients()
     }
 
+    function handleClick(){
+        const ingredient = new IngredientDTO("Test drink", 123, 70, "cl", "MISC");
+        createNewIngredient(JSON.stringify(ingredient))
+            .then(response => {
+                console.log(response);
+
+            })
+    }
+
     return(<MasterPage>
             <br/>
-            {
                 <>
+                    <button onClick={() => handleClick()}>Create test ingredient</button>
                     {unitsFetchDisplay}
                     <br/>
                     <br/>
                     {ingredientsFetchDisplay}
+
                 </>
-            }
+
         </MasterPage>
     );
 }
@@ -60,7 +70,14 @@ function IngredientList(props) {
         const newIngredient = new Ingredient(ingredient);
         return <IngredientCard units={units} ingredient={newIngredient}/>
     });
-    return <CardDeck>{ingredients}</CardDeck>;
+    let list = [];
+    let start = 0;
+    while(start < ingredients.length){
+        let end = Math.min(start + 5, ingredients.length)
+        list.push(<><CardDeck>{ingredients.slice(start, end)}</CardDeck> <br/></>);
+        start += 5;
+    }
+    return list;
 }
 
 
