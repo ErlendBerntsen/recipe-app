@@ -1,7 +1,7 @@
 import React from "react";
 import {Ingredient, IngredientDTO} from "../api/Classes";
-import IngredientCard from "../components/IngredientCard";
-import {CardDeck} from "react-bootstrap";
+import {IngredientCard} from "../components/IngredientCard";
+import { Col, Container, Row} from "react-bootstrap";
 import {MasterPage} from "./MasterPage";
 import {createNewIngredient, getAllIngredients, getAllUnits} from "../api/Methods";
 import useSWR from 'swr'
@@ -27,14 +27,14 @@ export default function IngredientsPage() {
 
     return(<MasterPage>
             <br/>
-                <>
+
                     <button onClick={() => handleClick()}>Create test ingredient</button>
                     {unitsFetchDisplay}
                     <br/>
                     <br/>
                     {ingredientsFetchDisplay}
 
-                </>
+
 
         </MasterPage>
     );
@@ -68,16 +68,12 @@ function GetIngredients(){
 function IngredientList(props) {
     const ingredients = props.ingredients.map(ingredient => {
         const newIngredient = new Ingredient(ingredient);
-        return <IngredientCard units={units} ingredient={newIngredient}/>
+        return (<Col style={{marginTop: "15px", marginBottom: "15px"}} xs={12} md={6} lg={4} xl={3}>
+            <IngredientCard units={units} ingredient={newIngredient}/>
+        </Col>);
     });
-    let list = [];
-    let start = 0;
-    while(start < ingredients.length){
-        let end = Math.min(start + 5, ingredients.length)
-        list.push(<><CardDeck>{ingredients.slice(start, end)}</CardDeck> <br/></>);
-        start += 5;
-    }
-    return list;
+
+    return <Container>{<Row>{ingredients}</Row>}</Container>;
 }
 
 

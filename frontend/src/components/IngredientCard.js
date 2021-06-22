@@ -5,7 +5,7 @@ import {deleteIngredient} from "../api/Methods";
 import IconButton from '@material-ui/core/IconButton';
 import {DeleteForever} from "@material-ui/icons";
 
-function IngredientCard(props){
+export function IngredientCard(props){
     const [showDeleteWarning, setShowDeleteWarning] = useState(false);
 
     const handleCloseDeleteWarning = () => setShowDeleteWarning(false);
@@ -19,22 +19,19 @@ function IngredientCard(props){
                 response.ok? alert("Deleted successfully") : alert("Error in deletion");
             }).then(handleCloseDeleteWarning)
     }
+    const space = "         ";
     return(
-        <Card border="secondary" style={{ width: '12rem' }}>
-            <Card.Img variant="top" src={"./" + ingredient.id + ".jpg"} height="100" alt="Ingredient image"/>
-            <Card.Header  >
+        <Card>
+            <Card.Img variant="top" src={"./" + ingredient.id + ".jpg"} height="100" alt="Ingredient picture"/>
+            <Card.Body style={{backgroundColor: "#ffffff", height: "160px"}}>
                 <Card.Title >{ingredient.name}</Card.Title>
-            </Card.Header>
-            <Card.Body>
                 <Card.Text>
-                    Kr {ingredient.price}, {ingredient.amount} {ingredient.unit}
-                    <br/>
+                    Kr {ingredient.price}, {ingredient.amount} {ingredient.unit} {space}
                     <Badge pill variant="info">
                         {ingredient.category}
                     </Badge>
                 </Card.Text>
-            </Card.Body>
-            <Card.Footer>
+
                 <Row>
                     <Col xs>
                         <IngredientModal edit={true} units={props.units} ingredient={ingredient}/>
@@ -61,9 +58,11 @@ function IngredientCard(props){
                         </>
                     </Col>
                 </Row>
-            </Card.Footer>
+
+
+            </Card.Body>
+
         </Card>
     );
 }
 
-export default IngredientCard

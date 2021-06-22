@@ -13,8 +13,8 @@ export function MasterPage(props){
                     <Nav.Link as={Link} to="/ingredients" className="nav-link">Ingredients</Nav.Link>
                 </Nav>
             </Navbar>
-            <main>
-                <Container>{props.children}</Container>
+            <main style={{backgroundColor: "#f4f4f5"}}>
+                <Container >{props.children}</Container>
             </main>
         </div>
     );
