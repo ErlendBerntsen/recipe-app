@@ -1,8 +1,8 @@
 import axios from 'axios'
 
-export function getAllIngredients(){
+export function getAllIngredients(url){
     return(
-    axios.get('/api/ingredients')
+    axios.get(url)
             .then(response => {
                 return response;
             })
@@ -12,39 +12,36 @@ export function getAllIngredients(){
     );
 }
 
-
-
-
-export function createNewIngredient(ingredient){
+export function createNewIngredient(url, ingredient){
     const requestOptions = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: ingredient
     };
-    return fetch('/api/ingredients/', requestOptions);
+    return fetch(url, requestOptions);
 
 }
 
-export function deleteIngredient(ingredientId){
+export function deleteIngredient(url, ingredientId){
     const requestOptions = {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
     };
-    return fetch('/api/ingredients/' + ingredientId, requestOptions);
+    return fetch(url + ingredientId, requestOptions);
 }
 
-export function editIngredient(ingredientId, patch){
+export function editIngredient(url, ingredientId, patch){
     const requestOptions = {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: patch
     };
-    return fetch('/api/ingredients/' + ingredientId, requestOptions);
+    return fetch(url + ingredientId, requestOptions);
 }
 
-export function getAllUnits(){
+export function getAllUnits(url){
     return(
-        axios.get('/api/units')
+        axios.get(url)
             .then(response => {
                 return response;
             })
@@ -54,9 +51,21 @@ export function getAllUnits(){
     );
 }
 
-export function getAllCategories(){
+export function getAllCategories(url){
     return(
-        axios.get('/api/categories')
+        axios.get(url)
+            .then(response => {
+                return response;
+            })
+            .catch(error => {
+                return error;
+            })
+    );
+}
+
+export function getAllRecipes(url){
+    return(
+        axios.get(url)
             .then(response => {
                 return response;
             })

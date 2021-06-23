@@ -59,10 +59,7 @@ export function IngredientCard(props){
                         </>
                     </Col>
                 </Row>
-
-
             </Card.Body>
-
         </Card>
     );
 }

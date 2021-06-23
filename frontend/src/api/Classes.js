@@ -1,6 +1,6 @@
 export class Ingredient{
     constructor(props) {
-        this.id = props.id
+        this.id = props.id;
         this.name = props.name;
         this.price = props.price;
         this.amount = props.amount;
@@ -17,6 +17,22 @@ export class IngredientDTO{
         this.amount = amount;
         this.unit = unit;
         this.category = category;
+    }
+}
+
+export class Recipe{
+    constructor(props) {
+        this.id = props.id;
+        this.name = props.name;
+        this.portions = props.portions;
+        this.description = props.description;
+        this.steps = props.steps;
+        this.glass = props.glass
+        this.rating = props.rating;
+        this.difficulty = props.difficulty;
+        this.price = props.price;
+        this.ingredients = props.ingredients;
+        this.links = [props._links.self.href, props._links.recipes.href];
     }
 }
 
