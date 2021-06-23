@@ -12,11 +12,21 @@ export default function IngredientForm(props){
     const [category, setCategory] = useState(isCreating? '' : props.ingredient.category)
     const [alert, setAlert] = useState(null);
 
+
+    const allUnits = props.units.map(unit => {
+        return <option>{unit.abbreviation}</option>
+    })
+    const allCategories = props.categories.map(category => {
+        return <option>{category}</option>
+    })
+
     const chooseUnit = "Choose unit";
     const chooseCategory = "Choose category";
 
     const validations = [name !== '', price >= 0 && price !== null, amount >= 1 && amount !== null
         , unit !== '' && unit !== chooseUnit, category !== '' && category !== chooseCategory]
+
+
     function handleClick(){
         isCreating? handleCreation() : handleEdit()
     }
@@ -44,6 +54,7 @@ export default function IngredientForm(props){
         let errorText = isCreating? "creating" : "editing"
         response.ok? setAlert(<Alert variant="success">Successfully {successText} ingredient</Alert>) :
                 setAlert(<Alert variant="danger">Error in {errorText} ingredient</Alert>);
+        window.location.reload();
     }
 
     let form = (
@@ -80,22 +91,18 @@ export default function IngredientForm(props){
                                   onChange={(event) => setUnit(event.target.value)}
                                   isValid={validations[3]}>
                         <option>{chooseUnit}</option>
-                        {props.units}
+                        {allUnits}
                     </Form.Control>
                 </Form.Group>
             </Form.Row>
 
-            {//TODO ADD CATEGORY FETCH
-            }
             <Form.Group controlId="formCategory">
                 <Form.Label>Category</Form.Label>
                 <Form.Control as="select" defaultValue={isCreating? chooseCategory : category}
                               onChange={(event) => setCategory(event.target.value)}
                               isValid={validations[4]}>>
                     <option>{chooseCategory}</option>
-                    <option>RUM</option>
-                    <option>VODKA</option>
-                    <option>MISC</option>
+                    {allCategories}
                 </Form.Control>
             </Form.Group>
             <Button  disabled={!validations.every(Boolean)} type="submit" variant="primary" onClick={() => handleClick()}>

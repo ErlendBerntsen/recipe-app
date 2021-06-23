@@ -12,9 +12,8 @@ export default function IngredientModal(props){
     const text = props.edit? "Edit" : "Create A New Ingredient"
     const color = props.edit? "outline-warning" : "primary"
     const size = props.edit? "sm" : "lg"
-    const units = props.units.map(unit => {
-        return <option>{unit.abbreviation}</option>
-    })
+
+
 
     const button = props.edit? <IconButton onClick={handleShow}><Edit/></IconButton>
         : <Button variant={color} size={size} onClick={handleShow}>{text}</Button>
@@ -27,7 +26,7 @@ export default function IngredientModal(props){
                     <Modal.Title>{text}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <IngredientForm ingredient={props.ingredient} units={units} handleClose={handleClose}> </IngredientForm>
+                    <IngredientForm ingredient={props.ingredient} units={props.units} categories={props.categories} handleClose={handleClose}> </IngredientForm>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={handleClose}>

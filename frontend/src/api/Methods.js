@@ -13,6 +13,8 @@ export function getAllIngredients(){
 }
 
 
+
+
 export function createNewIngredient(ingredient){
     const requestOptions = {
         method: 'POST',
@@ -51,4 +53,17 @@ export function getAllUnits(){
             })
     );
 }
+
+export function getAllCategories(){
+    return(
+        axios.get('/api/categories')
+            .then(response => {
+                return response;
+            })
+            .catch(error => {
+                return error;
+            })
+    );
+}
+
 

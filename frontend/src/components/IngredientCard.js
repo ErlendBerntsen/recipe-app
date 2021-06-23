@@ -13,11 +13,12 @@ export function IngredientCard(props){
 
     const ingredient = props.ingredient;
     function handleDelete(){
-
         deleteIngredient(ingredient.id)
             .then(response => {
                 response.ok? alert("Deleted successfully") : alert("Error in deletion");
-            }).then(handleCloseDeleteWarning)
+                handleCloseDeleteWarning();
+                window.location.reload();
+            });
     }
     const space = "         ";
     return(
@@ -34,11 +35,11 @@ export function IngredientCard(props){
 
                 <Row>
                     <Col xs>
-                        <IngredientModal edit={true} units={props.units} ingredient={ingredient}/>
+                        <IngredientModal edit={true} ingredient={ingredient} units={props.units} categories={props.categories} />
                     </Col>
                     <Col xs>
                         <>
-                            <IconButton onClick={handleShowDeleteWarning}>
+                            <IconButton onClick={() => handleShowDeleteWarning}>
                                 <DeleteForever />
                             </IconButton>
                             <Modal show={showDeleteWarning} onHide={handleCloseDeleteWarning}>
