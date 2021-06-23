@@ -75,4 +75,15 @@ export function getAllRecipes(url){
     );
 }
 
+export function getRecipe(url){
+    return(
+        axios.get(url)
+            .then(response => {
+                return response;
+            })
+            .catch(error => {
+                return error;
+            })
+    );
+}
 

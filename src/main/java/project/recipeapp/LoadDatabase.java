@@ -78,7 +78,7 @@ public class LoadDatabase {
             seabreeze.setNotes("Too bitter from the grapefruit juice");
             seabreeze.setGlass("Collins");
             seabreeze.setRating(6);
-            seabreeze.setRating(3);
+            seabreeze.setDifficulty(3);
             recipeRepository.save(seabreeze);
 
 
