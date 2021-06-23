@@ -39,7 +39,7 @@ export function IngredientCard(props){
                     </Col>
                     <Col xs>
                         <>
-                            <IconButton onClick={() => handleShowDeleteWarning}>
+                            <IconButton onClick={() => handleShowDeleteWarning()}>
                                 <DeleteForever />
                             </IconButton>
                             <Modal show={showDeleteWarning} onHide={handleCloseDeleteWarning}>
