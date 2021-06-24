@@ -27,6 +27,7 @@ export class Recipe{
         this.portions = props.portions;
         this.description = props.description;
         this.steps = props.steps;
+        this.notes = props.notes;
         this.glass = props.glass
         this.rating = props.rating;
         this.difficulty = props.difficulty;

@@ -5,11 +5,15 @@ import {getAllRecipes} from "../api/Methods";
 import {Col, Container, Row, Spinner} from "react-bootstrap";
 import {Recipe} from "../api/Classes";
 import RecipeCard from "../components/RecipeCard";
+import {Link} from "react-router-dom";
+import {Fab} from "@material-ui/core";
 
 export default function RecipesPage(){
     let recipeFetchDisplay = GetRecipes();
+    const recipeButton = getButton();
     return(<MasterPage>
             <br/>
+            {recipeButton}
             {recipeFetchDisplay}
         </MasterPage>
 
@@ -41,4 +45,14 @@ function RecipeList(props){
         );
     });
     return (<Container> <Row>{recipes}</Row></Container>);
+}
+
+function getButton(){
+    return(
+        <Link as={Fab} to="/createrecipe">
+            <Fab variant="extended" size="medium" color="primary">
+                Create New Recipe
+            </Fab>
+        </Link>
+    )
 }

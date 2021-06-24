@@ -66,7 +66,7 @@ public class LoadDatabase {
             ingredients.add(new RecipeIngredient("Vodka", vodka, 60, milliliter, false));
             ingredients.add(new RecipeIngredient("Cranberry Juice", cranberryJuice, 90, milliliter, false));
             ingredients.add(new RecipeIngredient("Grapefruit Juice", grapefruitJuice, 60, milliliter, false));
-            ingredients.add(new RecipeIngredient("Grapefruit", grapefruit, 1, piece, true));
+            ingredients.add(new RecipeIngredient("Grapefruit", grapefruit, 0.1, piece, true));
 
 
             var seabreeze = new Recipe("Sea Breeze", ingredients);

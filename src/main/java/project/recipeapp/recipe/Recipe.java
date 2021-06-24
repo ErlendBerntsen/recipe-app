@@ -18,7 +18,6 @@ public class Recipe {
     private String name;
     private int portions = 1;
     private String description = "";
-
     private String steps = "";
     private String notes = "";
     private String glass = "";
