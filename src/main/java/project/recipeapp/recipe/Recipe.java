@@ -19,9 +19,7 @@ public class Recipe {
     private int portions = 1;
     private String description = "";
 
-    @ElementCollection(fetch =  FetchType.EAGER)
-    private List<Step> steps;
-
+    private String steps = "";
     private String notes = "";
     private String glass = "";
     private double rating;
@@ -48,7 +46,7 @@ public class Recipe {
         return "Name: " + name + "\n"
                 + "Portions: " + portions + "\n"
                 + "Description: " + description + "\n"
-                +  printSteps()
+                + "Steps: " + steps + "\n"
                 + "Notes: " + notes + "\n"
                 + "Glass: " + glass + "\n"
                 + "Rating: " + rating + "/10\n"
@@ -56,13 +54,6 @@ public class Recipe {
                 + "Ingredients: " + ingredients.toString();
     }
 
-    private String printSteps(){
-        StringBuilder stepsPrinted = new StringBuilder();
-        for(int i = 0; i < steps.size(); i++){
-            stepsPrinted.append(i +1).append(". ").append( steps.get(i)).append("\n");
-        }
-        return stepsPrinted.toString();
-    }
 
     public void calculatePrice(){
         price = 0;

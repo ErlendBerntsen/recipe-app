@@ -12,7 +12,6 @@ import project.recipeapp.ingredient.IngredientRepository;
 import project.recipeapp.recipe.Recipe;
 import project.recipeapp.recipe.RecipeIngredient;
 import project.recipeapp.recipe.RecipeRepository;
-import project.recipeapp.recipe.Step;
 import project.recipeapp.units.Unit;
 import project.recipeapp.units.volumes.CentiLiter;
 import project.recipeapp.units.volumes.Liter;
@@ -33,7 +32,7 @@ class RecipeTest {
     private int portions;
     private String name;
     private String description;
-    private List<Step> steps;
+    private String steps;
     private String glass;
     private double rating;
     private double difficulty;
@@ -64,12 +63,11 @@ class RecipeTest {
 
         name = "Clover Club";
         portions = 1;
-        steps = new ArrayList<>();
-        steps.add(new Step("Combine all the ingredients into your cocktail"));
-        steps.add(new Step("Dry shake (without ice)"));
-        steps.add(new Step("Wet shake (with ice)"));
-        steps.add(new Step("Strain into a chilled coupe"));
-        steps.add(new Step("Garnish with skewered raspberries"));
+        steps = "\t1. Combine all the ingredients into your cocktail\n"
+                + "\t2. Dry shake (without ice)\n"
+                + "\t3. Wet shake (with ice)\n"
+                + "\t4. Strain into a chilled coupe\n"
+                + "\t5. Garnish with skewered raspberries";
         description = "A sour and sweet cocktail from the early 1900's with taste of lemon and raspberries.";
         glass = "Coupe";
         rating = 7;
@@ -129,7 +127,7 @@ class RecipeTest {
         String format = "Name: " + name + "\n"
                 + "Portions: " + portions +"\n"
                 + "Description: " + description + "\n"
-                +  printSteps(steps)
+                + "Steps: " + steps + "\n"
                 + "Notes: " + notes + "\n"
                 + "Glass: " + glass + "\n"
                 + "Rating: " + rating + "/10\n"
@@ -143,14 +141,6 @@ class RecipeTest {
         recipe.setRating(rating);
         recipe.setDifficulty(difficulty);
         assertEquals(format, recipe.toString());
-    }
-
-    private String printSteps (List<Step> steps){
-        StringBuilder stepsPrinted = new StringBuilder();
-        for(int i = 0; i < steps.size(); i++){
-            stepsPrinted.append(i +1).append(". ").append( steps.get(i)).append("\n");
-        }
-        return stepsPrinted.toString();
     }
 
     @Test

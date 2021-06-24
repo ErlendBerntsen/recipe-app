@@ -1,14 +1,25 @@
 import React from "react";
-import { Image, Jumbotron, ListGroup, ListGroupItem, Navbar} from "react-bootstrap";
+import {Col, Image, Jumbotron, ListGroup, ListGroupItem, Navbar, ProgressBar, Row} from "react-bootstrap";
 
 export default function RecipeJumbotron(props){
     const recipe = props.recipe;
     const ingredients = recipe.ingredients;
     const lists = getIngredients(ingredients);
     const priceText = recipe.price + "kr";
-    const ratingText = recipe.rating + "/10";
     const difficultyText = recipe.difficulty + "/10";
-    console.log(ingredients)
+    const ratingText = recipe.rating + "/10";
+
+    const ratingColor = getColor(recipe.rating);
+    const difficultyColor = getColor(10 - recipe.difficulty);
+
+    function getColor(number){
+        if(number >= 7) return "success";
+        else if(number > 3) return "warning";
+        else return "danger";
+    }
+    const ratingBar = <ProgressBar  now={recipe.rating * 10} variant={ratingColor} />
+    const difficultyBar = <ProgressBar  now={recipe.difficulty * 10} variant={difficultyColor} />
+
     return(
         <Jumbotron>
             <text>{JSON.stringify(recipe)}</text>
@@ -17,9 +28,31 @@ export default function RecipeJumbotron(props){
             <h1>{recipe.name}</h1>
             <h5>{recipe.description}</h5>
             <br/>
-            <h6>Price {priceText}</h6>
-            <h6>Rating {ratingText}</h6>
-            <h6>Difficulty  {difficultyText}</h6>
+            <ListGroup>
+                <ListGroupItem>
+                    <Row>
+                        <Col>
+                            <p>Portions</p>
+                            <h3>{recipe.portions}</h3>
+                        </Col>
+                        <Col>
+                            <p>Price</p>
+                            <h3>{priceText}</h3>
+                        </Col>
+                        <Col>
+                            <p>Rating</p>
+                            <h3>{ratingText}</h3>
+                            {ratingBar}
+                        </Col>
+                        <Col>
+                            <p>Difficulty</p>
+                            <h3>{difficultyText}</h3>
+                            {difficultyBar}
+                        </Col>
+                    </Row>
+                </ListGroupItem>
+            </ListGroup>
+
             <br/>
             <Navbar bg="light">
                 <h3>Ingredients</h3>
@@ -39,7 +72,7 @@ export default function RecipeJumbotron(props){
                 <h3>Steps</h3>
             </Navbar>
             <ListGroup >
-               <ListGroupItem>{recipe.steps}</ListGroupItem>
+                {getSteps(recipe.steps)}
             </ListGroup>
         </Jumbotron>
     );
@@ -58,4 +91,14 @@ function getIngredients(ingredients){
         }
     });
     return {ingredientList: ingredientList, garnishList: garnishList};
+}
+
+function getSteps(steps){
+    const stepsList = steps.split('|');
+    let list = [];
+    stepsList.forEach((step, index) => {
+        const text = (index + 1) + ". " + step
+        list.push(<ListGroupItem>{text}</ListGroupItem>)
+    })
+    return list;
 }
