@@ -59,7 +59,7 @@ class RecipeControllerTest {
     private String recipeName;
     private int portions;
     private String description;
-    private String steps;
+    private List<Step> steps;
     private String glass;
     private double rating;
     private double difficulty;
@@ -85,11 +85,12 @@ class RecipeControllerTest {
 
 
         recipeName = "Clover Club";
-        steps = "\t1. Combine all the ingredients into your cocktail"+
-                "\t2. Dry shake (without ice)"+
-                "\t3. Wet shake (with ice)"+
-                "\t4. Strain into a chilled coupe"+
-                "\t5. Garnish with skewered raspberries";
+        steps = new ArrayList<>();
+        steps.add(new Step("Combine all the ingredients into your cocktail"));
+        steps.add(new Step("Dry shake (without ice)"));
+        steps.add(new Step("Wet shake (with ice)"));
+        steps.add(new Step("Strain into a chilled coupe"));
+        steps.add(new Step("Garnish with skewered raspberries"));
         description = "A sour and sweet cocktail from the early 1900's with taste of lemon and raspberries.";
         glass = "Coupe";
         rating = 7;
@@ -148,8 +149,8 @@ class RecipeControllerTest {
     @Test
     void twoRecipesShouldBeCreatedWithController(){
         assertEquals(0, recipeRepository.count());
-        recipeController.newRecipe(new RecipeDTO("Recipe 1",1, "", "", "", "", 0, 0, new ArrayList<>()));
-        recipeController.newRecipe(new RecipeDTO("Recipe 2",1, "", "", "", "", 0, 0, new ArrayList<>()));
+        recipeController.newRecipe(new RecipeDTO("Recipe 1",1, "", new ArrayList<>(), "", "", 0, 0, new ArrayList<>()));
+        recipeController.newRecipe(new RecipeDTO("Recipe 2",1, "", new ArrayList<>(), "", "", 0, 0, new ArrayList<>()));
         assertEquals(2, recipeRepository.count());
     }
 
@@ -354,7 +355,8 @@ class RecipeControllerTest {
         String newName = "new name";
         int newPortions = 2;
         String newDescription = "new description";
-        String newSteps = "new steps";
+        List<String> newSteps = new ArrayList<>();
+        newSteps.add("new steps");
         String newNotes = "new notes";
         String newGlass = "new glass";
         double newRating = 10.0;

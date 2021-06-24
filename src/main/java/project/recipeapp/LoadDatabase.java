@@ -10,6 +10,7 @@ import project.recipeapp.ingredient.IngredientRepository;
 import project.recipeapp.recipe.Recipe;
 import project.recipeapp.recipe.RecipeIngredient;
 import project.recipeapp.recipe.RecipeRepository;
+import project.recipeapp.recipe.Step;
 import project.recipeapp.units.Unit;
 import project.recipeapp.units.volumes.CentiLiter;
 import project.recipeapp.units.volumes.Liter;
@@ -71,10 +72,12 @@ public class LoadDatabase {
 
             var seabreeze = new Recipe("Sea Breeze", ingredients);
             seabreeze.setDescription("A simple, tart, and bitter vodka mixed drink");
-            seabreeze.setSteps("1. Combine all ingredients to your cocktail shaker\n" +
-                    "2. Shake with ice" +
-                    "3. Strain over fresh ice into a collins glass" +
-                    "4. Garnish with a slice of grapefruit");
+            List<Step> steps = new ArrayList<>();
+            steps.add(new Step("Combine all ingredients to your cocktail shaker"));
+            steps.add(new Step("Shake with ice"));
+            steps.add(new Step("Strain over fresh ice into a collins glass"));
+            steps.add(new Step("Garnish with a slice of grapefruit"));
+            seabreeze.setSteps(steps);
             seabreeze.setNotes("Too bitter from the grapefruit juice");
             seabreeze.setGlass("Collins");
             seabreeze.setRating(6);
