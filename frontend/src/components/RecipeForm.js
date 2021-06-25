@@ -1,13 +1,14 @@
-import React, {useState} from "react"
-import {Formik, Field, useField, FieldArray, insert} from "formik";
-import {Button, ButtonGroup, Col, Form, Row, Spinner} from "react-bootstrap";
+import React from "react"
+import {Formik, Field, useField, FieldArray} from "formik";
+import {Button, Col, Form, Row, Spinner} from "react-bootstrap";
 import * as Yup from 'yup';
-import {Fab, Slider} from "@material-ui/core";
+import {Fab, } from "@material-ui/core";
 import {Add, Clear} from "@material-ui/icons";
 import useSWR from "swr";
 import {getAllIngredients, getAllUnits} from "../api/Methods";
 
 let units;
+const errorColor = "red";
 export default function RecipeForm(props){
     let unitsFetchDisplay = GetUnits();
     let ingredientsFetchDisplay;
@@ -24,9 +25,12 @@ const MyTextInput = ({label, ...props}) => {
     return(
       <>
           <Form.Label>{label}</Form.Label>
-          <Form.Control as={Field} {...field} {...props}/>
           {meta.touched && meta.error ?
-              <div style={{color: "#fc8181"}}>{meta.error}</div> : null
+              <>
+                  <Form.Control style={{borderColor: "red"}} as={Field} {...field} {...props}/>
+                  <div style={{color: "red"}}>{meta.error}</div>
+              </>
+              : <Form.Control as={Field} {...field} {...props}/>
           }
       </>
     );
@@ -38,7 +42,7 @@ const MyMultipleInput = ({label, ...props}) => {
         <>
             <Form.Control as={Field} {...field} {...props}/>
             {meta.touched && meta.error ?
-                <div style={{color: "#fc8181"}}>{meta.error}</div> : null
+                <div style={{color: errorColor}}>{meta.error}</div> : null
             }
         </>
     );
@@ -49,9 +53,13 @@ const MySelect = ({ label, ...props}) => {
     return (
         <>
             <Form.Label>{label}</Form.Label>
-            <Form.Control as="select" {...field} {...props} />
             {meta.touched && meta.error ?
-                <div>{meta.error}</div> : null}
+                <>
+                    <Form.Control style={{borderColor: "red"}} as="select" {...field} {...props} />
+                    <div style={{color: errorColor}}>{meta.error}</div>
+                </>
+                : <Form.Control  as="select" {...field} {...props} />
+            }
         </>
 
     );
@@ -62,11 +70,11 @@ const MyCheckBox = ({children, ...props}) => {
     return(
         <div>
             <label className="checkbox-input">
-                <input type="checkbox" {...field} {...props}/>
+                <input type="checkbox" checked={meta.initialValue} {...field} {...props} />
                 {" " + children}
             </label>
             {meta.touched && meta.error ? (
-                <div className="error">{meta.error}</div>
+                <div style={{color: errorColor}}>{meta.error}</div>
             ) : null}
         </div>
     );
@@ -117,6 +125,21 @@ function RecipeFormik(props){
 
     const isCreating = props.recipe === undefined;
 
+    let ingredientList = [];
+    if(!isCreating){
+        props.recipe.ingredients.forEach(ingredient => {
+            ingredientList.push(
+                {
+                    ingredientName: ingredient.name,
+                    ingredientType: ingredient.ingredient.name,
+                    amount: ingredient.amount,
+                    unit: ingredient.unit.abbreviation,
+                    isGarnish: ingredient.garnish,
+                }
+            );
+        });
+    }
+
     return(
         <Formik
             initialValues={{
@@ -124,19 +147,19 @@ function RecipeFormik(props){
                 description: isCreating ? '' : props.recipe.description,
                 portions: isCreating? 1 : props.recipe.portions,
                 glass: isCreating? '' : props.recipe.glass,
-                rating: isCreating? null : props.recipe.rating,
-                difficulty: isCreating? null : props.recipe.difficulty,
+                rating: isCreating? undefined : props.recipe.rating,
+                difficulty: isCreating? undefined : props.recipe.difficulty,
                 steps: isCreating? [''] : props.recipe.steps.split('|'),//TODO add validation and initial value for edit
                 notes: isCreating? '' : props.recipe.notes,
-                ingredients: [
+                ingredients: isCreating ? [
                     {
                         ingredientName: '',
-                        ingredientType: null,
-                        amount: null,
-                        unit: null,
-                        isGarnish: false,
+                        ingredientType: undefined,
+                        amount: undefined,
+                        unit: undefined,
+                        isGarnish: undefined,
                     }
-                ]
+                ] : ingredientList,
             }}
             validationSchema={Yup.object({
                 recipeName: Yup.string().required('Required'),
@@ -145,9 +168,18 @@ function RecipeFormik(props){
                 glass: Yup.string().optional(),
                 rating: Yup.number().optional().max(10, "Rating can't be higher than 10").min(0, "Rating can't be lower than 0"),
                 difficulty: Yup.number().optional().max(10, "Difficulty can't be higher than 10").min(0, "Difficulty can't be lower than 0"),
-                notes: Yup.string().optional(),
+                notes: Yup.string(),
+                steps: Yup.array(Yup.string()).optional(),
+                ingredients: Yup.array(Yup.object().shape({
+                    ingredientName: Yup.string().required('Required'),
+                    ingredientType: Yup.string().required('Required'),
+                    amount: Yup.number().required('Required').positive('Must be a positive number'),
+                    unit: Yup.string().required('Required'),
+                    isGarnish: Yup.boolean().optional(),
+                })).min(1, 'Recipe must have at least one ingredient'),
             })}
             onSubmit={(values, {setSubmitting}) => {
+
                 let stepsAsString = "";
                 values.steps.forEach((step, index) =>{
                     if(step !== ''){
@@ -157,8 +189,6 @@ function RecipeFormik(props){
                         }
                     }
                 })
-                console.log(values.steps);
-                console.log(stepsAsString);
                 setTimeout(() => {
                     alert(JSON.stringify(values, null, 2));
                     setSubmitting(false);
@@ -220,14 +250,14 @@ function RecipeFormik(props){
                             <Form.Group>
                                 <Form.Label>Steps (optional)</Form.Label>
                                 <FieldArray name="steps">
-                                    {({insert, remove, push}) => (
+                                    {({remove, push}) => (
                                         <div>
                                             {formik.values.steps.length > 0 &&
                                             formik.values.steps.map((step, index) => (
                                                 <div key={index}>
                                                     <Row>
-                                                        <Col md="auto" >
-                                                            <p>{index + 1 }</p>
+                                                        <Col md="auto" style={{display: "flex", alignItems: "center"}}>
+                                                            {index + 1 }
                                                         </Col>
                                                         <Col>
                                                             <MyMultipleInput
@@ -263,13 +293,16 @@ function RecipeFormik(props){
                                     placeholder="Enter notes"
                                 />
                             </Form.Group>
-                            <Button type="submit">Submit</Button>
                         </Col>
                         <Col>
                             <Form.Group>
                                 <Form.Label><h3> Ingredients</h3> </Form.Label>
+                                {
+                                    typeof formik.errors.ingredients === 'string' ?
+                                        <div style={{color: errorColor}}>{formik.errors.ingredients}</div> : null
+                                }
                                 <FieldArray name="ingredients">
-                                    {({insert, remove, push}) => (
+                                    {({remove, push}) => (
                                         <div>
                                             {formik.values.ingredients.length > 0 &&
                                             formik.values.ingredients.map((ingredient, index) => (
@@ -281,7 +314,7 @@ function RecipeFormik(props){
                                                                     <Col>
                                                                         <MyTextInput
                                                                             label="Ingredient Name"
-                                                                            name={`ingredient.${index}.ingredientName`}
+                                                                            name={`ingredients.${index}.ingredientName`}
                                                                             type="text"
                                                                             placeholder="Enter ingredient name"
                                                                         />
@@ -289,7 +322,7 @@ function RecipeFormik(props){
                                                                     <Col>
                                                                         <MySelect
                                                                             label="Ingredient Type"
-                                                                            name={`ingredient.${index}.ingredientType`}
+                                                                            name={`ingredients.${index}.ingredientType`}
                                                                         >
                                                                             <option value="">Select an ingredient</option>
                                                                             {allIngredients}
@@ -302,7 +335,7 @@ function RecipeFormik(props){
                                                                     <Col>
                                                                         <MyTextInput
                                                                             label="Amount"
-                                                                            name={`ingredient.${index}.amount`}
+                                                                            name={`ingredients.${index}.amount`}
                                                                             type="number"
                                                                             placeholder="Enter amount"
                                                                         />
@@ -310,23 +343,25 @@ function RecipeFormik(props){
                                                                     <Col>
                                                                         <MySelect
                                                                             label="Unit"
-                                                                            name={`ingredient.${index}.unit`}
+                                                                            name={`ingredients.${index}.unit`}
                                                                         >
                                                                             <option value="">Select an unit</option>
                                                                             {allUnits}
                                                                         </MySelect>
                                                                     </Col>
                                                                 </Row>
-                                                                <MyCheckBox name={`ingredient.${index}.isGarnish`}>
+                                                                <MyCheckBox name={`ingredients.${index}.isGarnish`}>
                                                                     Add as garnish
                                                                 </MyCheckBox>
 
                                                             </Form.Group>
                                                         </Col>
-                                                        <Col md="auto">
-                                                            <Fab size="small" color="secondary" type="button" onClick={() => remove(index)}>
-                                                                <Clear />
-                                                            </Fab>
+                                                        <Col md="auto" style={{display: "flex", alignItems: "center", }}>
+                                                            <div >
+                                                                <Fab size="small" color="secondary" type="button" onClick={() => remove(index)}>
+                                                                    <Clear />
+                                                                </Fab>
+                                                            </div>
                                                         </Col>
                                                     </Row>
                                                     <hr/>
@@ -334,10 +369,10 @@ function RecipeFormik(props){
                                             ))}
                                                 <Fab variant="extended" size="small" color="primary" type="button" onClick={() => push({
                                                     ingredientName: "",
-                                                    ingredientType: null,
-                                                    amount: null,
-                                                    unit: null,
-                                                    isGarnish: false,
+                                                    ingredientType: undefined,
+                                                    amount: undefined,
+                                                    unit: undefined,
+                                                    isGarnish: undefined,
                                                 })}>
                                                     <Add />
                                                     Add Ingredient
@@ -346,6 +381,9 @@ function RecipeFormik(props){
                                     )}
                                 </FieldArray>
                             </Form.Group>
+                            <div style={{display: "flex", flexDirection: "row-reverse"}}>
+                                <Button  disabled={formik.isSubmitting} type="submit">{isCreating ? "Create Recipe" : "Save Changes"}</Button>
+                            </div>
                         </Col>
                     </Row>
                 </Form>
