@@ -43,9 +43,6 @@ export default function IngredientsPage() {
     );
 }
 
-
-
-
 function GetUnits(){
     const {data, error} = useSWR('/api/units', getAllUnits())
     if(error) {

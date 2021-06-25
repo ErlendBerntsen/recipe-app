@@ -40,6 +40,8 @@
     ]
   },
   "devDependencies": {
-    "axios": "^0.21.1"
+    "axios": "^0.21.1",
+    "formik": "^2.2.9",
+    "yup": "^0.32.9"
   }
 }
