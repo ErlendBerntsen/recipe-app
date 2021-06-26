@@ -13,7 +13,7 @@ export function IngredientCard(props){
 
     const ingredient = props.ingredient;
     function handleDelete(){
-        deleteIngredient(ingredient.id)
+        deleteIngredient('/api/ingredients/', ingredient.id)
             .then(response => {
                 response.ok? alert("Deleted successfully") : alert("Error in deletion");
                 handleCloseDeleteWarning();

@@ -3,6 +3,7 @@ import {Col, Image, Jumbotron, ListGroup, ListGroupItem, Modal, Navbar, Progress
 import {DeleteForever, Edit} from "@material-ui/icons";
 import {Button} from "@material-ui/core";
 import {Link} from "react-router-dom";
+import {deleteRecipe} from "../api/Methods";
 
 export default function RecipeJumbotron(props){
     const recipe = props.recipe;
@@ -171,7 +172,7 @@ function GetButtons(recipe){
                 <Col>
                     <Link as={Button} to={"/editrecipe/" + recipe.id}>
                         <div style={{float: "right"}}>
-                            <Button variant="contained" color="primary" startIcon={<Edit/>} onClick={() => handleEdit()}>
+                            <Button variant="contained" color="primary" startIcon={<Edit/>}>
                                 Edit
                             </Button>
                         </div>
@@ -196,7 +197,7 @@ function GetButtons(recipe){
                     <Button variant="contained" color="default" onClick={handleCloseDeleteWarning}>
                         Close
                     </Button>
-                    <Button variant="contained" color="secondary" onClick={handleDelete}>
+                    <Button variant="contained" color="secondary" onClick={() => handleDelete(recipe, handleCloseDeleteWarning)}>
                         Delete recipe
                     </Button>
                 </Modal.Footer>
@@ -205,10 +206,12 @@ function GetButtons(recipe){
     );
 }
 
-function handleEdit(){
-    console.log("Edit button pressed");
-}
 
-function handleDelete(){
-
+function handleDelete(recipe, handleCloseDeleteWarning){
+    deleteRecipe('/api/recipes/', recipe.id)
+        .then(response => {
+            response.ok? alert("Deleted successfully") : alert("Error in deletion");
+            handleCloseDeleteWarning();
+            window.location.reload();
+        });
 }

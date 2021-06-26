@@ -37,3 +37,27 @@ export class Recipe{
     }
 }
 
+export class RecipeDTO{
+    constructor(name, portions, description, steps, notes, glass, rating, difficulty, ingredients) {
+        this.name = name;
+        this.portions = portions;
+        this.description = description;
+        this.steps = steps;
+        this.notes = notes;
+        this.glass = glass
+        this.rating = rating;
+        this.difficulty = difficulty;
+        this.ingredients = ingredients;
+    }
+}
+
+export class RecipeIngredientDTO{
+    constructor(name, ingredient, amount, unit, isGarnish) {
+        this.name = name;
+        this.ingredient = ingredient;
+        this.amount = amount;
+        this.unit = unit;
+        this.garnish = isGarnish;
+    }
+
+}

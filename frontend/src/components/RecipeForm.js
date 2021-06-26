@@ -1,14 +1,22 @@
 import React from "react"
 import {Formik, Field, useField, FieldArray} from "formik";
-import {Button, Col, Form, Row, Spinner} from "react-bootstrap";
+import { Button, Col, Form, Row, Spinner} from "react-bootstrap";
 import * as Yup from 'yup';
-import {Fab, } from "@material-ui/core";
+import {Fab} from "@material-ui/core";
 import {Add, Clear} from "@material-ui/icons";
 import useSWR from "swr";
-import {getAllIngredients, getAllUnits} from "../api/Methods";
+import {
+    createNewRecipe,
+    editRecipe,
+    getAllIngredients,
+    getAllUnits
+} from "../api/Methods";
+import {RecipeDTO, RecipeIngredientDTO} from "../api/Classes";
+import {useHistory} from "react-router";
 
 let units;
 const errorColor = "red";
+
 export default function RecipeForm(props){
     let unitsFetchDisplay = GetUnits();
     let ingredientsFetchDisplay;
@@ -16,7 +24,9 @@ export default function RecipeForm(props){
         ingredientsFetchDisplay = GetIngredients(props)
     }
     return (
-        units === null? unitsFetchDisplay : ingredientsFetchDisplay
+        <>
+            {units === null? unitsFetchDisplay : ingredientsFetchDisplay}
+        </>
     );
 }
 
@@ -144,13 +154,13 @@ function RecipeFormik(props){
         <Formik
             initialValues={{
                 recipeName: isCreating ? '' : props.recipe.name,
-                description: isCreating ? '' : props.recipe.description,
                 portions: isCreating? 1 : props.recipe.portions,
+                description: isCreating ? '' : props.recipe.description,
+                steps: isCreating? [''] : props.recipe.steps.split('|'),
+                notes: isCreating? '' : props.recipe.notes,
                 glass: isCreating? '' : props.recipe.glass,
                 rating: isCreating? undefined : props.recipe.rating,
                 difficulty: isCreating? undefined : props.recipe.difficulty,
-                steps: isCreating? [''] : props.recipe.steps.split('|'),//TODO add validation and initial value for edit
-                notes: isCreating? '' : props.recipe.notes,
                 ingredients: isCreating ? [
                     {
                         ingredientName: '',
@@ -163,13 +173,13 @@ function RecipeFormik(props){
             }}
             validationSchema={Yup.object({
                 recipeName: Yup.string().required('Required'),
-                description: Yup.string().optional(),
                 portions: Yup.number().required('Required').integer('Must be a whole number').positive('Must be a positive whole number'),
+                description: Yup.string().optional(),
+                steps: Yup.array(Yup.string()).optional(),
+                notes: Yup.string(),
                 glass: Yup.string().optional(),
                 rating: Yup.number().optional().max(10, "Rating can't be higher than 10").min(0, "Rating can't be lower than 0"),
                 difficulty: Yup.number().optional().max(10, "Difficulty can't be higher than 10").min(0, "Difficulty can't be lower than 0"),
-                notes: Yup.string(),
-                steps: Yup.array(Yup.string()).optional(),
                 ingredients: Yup.array(Yup.object().shape({
                     ingredientName: Yup.string().required('Required'),
                     ingredientType: Yup.string().required('Required'),
@@ -189,8 +199,15 @@ function RecipeFormik(props){
                         }
                     }
                 })
+                let ingredients = []
+                values.ingredients.forEach(ingredient =>{
+                    ingredients.push(new RecipeIngredientDTO(ingredient.ingredientName, ingredient.ingredientType,
+                        ingredient.amount, ingredient.unit, ingredient.isGarnish))
+                })
+                const recipe = new RecipeDTO(values.recipeName, values.portions, values.description , stepsAsString,
+                    values.notes, values.glass, values.rating, values.difficulty, ingredients)
+                isCreating ? HandleCreation(recipe) : HandleEdit(recipe, props.recipe.id)
                 setTimeout(() => {
-                    alert(JSON.stringify(values, null, 2));
                     setSubmitting(false);
                 }, 400);
             }}
@@ -390,4 +407,40 @@ function RecipeFormik(props){
             )}
         </Formik>
     );
+}
+
+function HandleCreation(recipe){
+    createNewRecipe('/api/recipes', JSON.stringify(recipe))
+        .then(HandleResponse);
+}
+
+function HandleEdit(recipe, recipeId){
+    let patch = '['
+    Object.entries(recipe).forEach(([key, value]) => {
+        if(key === 'ingredients'){
+            value.forEach((ingredient, index) => {
+                Object.entries(ingredient).forEach(([iKey, iValue]) => {
+                    patch += '{"op": "replace", "path": "/' + key + '/' + index + '/' +   iKey    +'", "value": "' + iValue + '"},'
+                });
+            });
+        }else{
+            patch += '{"op": "replace", "path": "/' + key + '", "value": "' + value + '"},'
+        }
+    });
+
+    const actualPatch = patch.substring(0, patch.length-2) + '}]';
+    editRecipe('/api/recipes/', recipeId, actualPatch)
+        .then(HandleResponse);
+}
+
+function HandleResponse(response){
+    response.ok? alert("success") : alert("error")
+}
+
+function Redirect(response){
+    let history = useHistory();
+    alert("success");
+    response.json().then(data => {
+        history.push('/recipes/' + data.id);
+    })
 }

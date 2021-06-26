@@ -32,7 +32,7 @@ export default function IngredientForm(props){
     }
 
     function handleCreation(){
-        createNewIngredient(JSON.stringify(new IngredientDTO(name, price, amount, unit, category)))
+        createNewIngredient('/api/ingredients', JSON.stringify(new IngredientDTO(name, price, amount, unit, category)))
             .then(handleResponse);
     }
 
@@ -44,7 +44,7 @@ export default function IngredientForm(props){
             patch += '{"op": "replace", "path": "/' + stateNames[i] + '", "value": "' + stateValues[i] + '"'
             patch += (i == stateNames.length - 1 ? '}]' : '},')
         });
-        editIngredient(props.ingredient.id, patch)
+        editIngredient('/api/ingredients/', props.ingredient.id, patch)
             .then(handleResponse);
     }
 

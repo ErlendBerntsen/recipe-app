@@ -19,7 +19,6 @@ export function createNewIngredient(url, ingredient){
         body: ingredient
     };
     return fetch(url, requestOptions);
-
 }
 
 export function deleteIngredient(url, ingredientId){
@@ -85,5 +84,31 @@ export function getRecipe(url){
                 return error;
             })
     );
+}
+
+export function createNewRecipe(url, recipe){
+    const requestOptions = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: recipe
+    };
+    return fetch(url, requestOptions);
+}
+
+export function editRecipe(url, recipeId, patch){
+    const requestOptions = {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: patch
+    };
+    return fetch(url + recipeId, requestOptions);
+}
+
+export function deleteRecipe(url, recipeId){
+    const requestOptions = {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+    };
+    return fetch(url + recipeId, requestOptions);
 }
 

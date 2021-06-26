@@ -126,6 +126,7 @@ public class RecipeController {
             }
         }
         recipe.setIngredients(ingredients);
+        recipe.calculatePrice();
     }
 
 }
