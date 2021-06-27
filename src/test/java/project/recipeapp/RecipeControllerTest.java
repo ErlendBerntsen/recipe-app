@@ -61,8 +61,8 @@ class RecipeControllerTest {
     private String description;
     private String steps;
     private String glass;
-    private double rating;
-    private double difficulty;
+    private Double rating;
+    private Double difficulty;
     private String notes;
     private List<RecipeIngredientDTO> ingredients;
     private Ingredient gin;
@@ -92,8 +92,8 @@ class RecipeControllerTest {
                 "\t5. Garnish with skewered raspberries";
         description = "A sour and sweet cocktail from the early 1900's with taste of lemon and raspberries.";
         glass = "Coupe";
-        rating = 7;
-        difficulty = 6;
+        rating = 7.0;
+        difficulty = 6.0;
         notes = "Too much gin taste, and needs a little less egg whites";
 
 
@@ -148,8 +148,8 @@ class RecipeControllerTest {
     @Test
     void twoRecipesShouldBeCreatedWithController(){
         assertEquals(0, recipeRepository.count());
-        recipeController.newRecipe(new RecipeDTO("Recipe 1",1, "", "", "", "", 0, 0, new ArrayList<>()));
-        recipeController.newRecipe(new RecipeDTO("Recipe 2",1, "", "", "", "", 0, 0, new ArrayList<>()));
+        recipeController.newRecipe(new RecipeDTO("Recipe 1",1, "", "", "", "", 0.0, 0.0, new ArrayList<>()));
+        recipeController.newRecipe(new RecipeDTO("Recipe 2",1, "", "", "", "", 0.0, 0.0, new ArrayList<>()));
         assertEquals(2, recipeRepository.count());
     }
 
@@ -357,8 +357,8 @@ class RecipeControllerTest {
         String newSteps = "new steps";
         String newNotes = "new notes";
         String newGlass = "new glass";
-        double newRating = 10.0;
-        double newDifficulty = 10.0;
+        Double newRating = 10.0;
+        Double newDifficulty = 10.0;
         String patch = "["
                 + "{\"op\":\"replace\",\"path\":\"/name\",\"value\":\"" + newName + "\"},"
                 + "{\"op\":\"replace\",\"path\":\"/portions\",\"value\":\"" + newPortions + "\"},"
@@ -525,6 +525,7 @@ class RecipeControllerTest {
                         is (aggregateRootLink + "/" + recipe.getId())))
                 .andExpect(jsonPath( "$._links.recipes.href", is (aggregateRootLink)));
     }
+
 
 
 

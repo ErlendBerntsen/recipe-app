@@ -34,8 +34,8 @@ class RecipeTest {
     private String description;
     private String steps;
     private String glass;
-    private double rating;
-    private double difficulty;
+    private Double rating;
+    private Double difficulty;
     private String notes;
     private List<RecipeIngredient> ingredients;
     private Ingredient gin;
@@ -70,8 +70,8 @@ class RecipeTest {
                 + "\t5. Garnish with skewered raspberries";
         description = "A sour and sweet cocktail from the early 1900's with taste of lemon and raspberries.";
         glass = "Coupe";
-        rating = 7;
-        difficulty = 6;
+        rating = 7.0;
+        difficulty = 6.0;
         notes = "Too much gin taste, and needs a little less egg whites";
 
 

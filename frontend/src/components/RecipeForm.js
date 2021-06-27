@@ -159,8 +159,8 @@ function RecipeFormik(props){
                 steps: isCreating? [''] : props.recipe.steps.split('|'),
                 notes: isCreating? '' : props.recipe.notes,
                 glass: isCreating? '' : props.recipe.glass,
-                rating: isCreating? undefined : props.recipe.rating,
-                difficulty: isCreating? undefined : props.recipe.difficulty,
+                rating: isCreating? undefined : props.recipe.rating? props.recipe.rating : undefined,
+                difficulty: isCreating? undefined : props.recipe.difficulty? props.recipe.difficulty : undefined,
                 ingredients: isCreating ? [
                     {
                         ingredientName: '',
@@ -420,27 +420,30 @@ function HandleEdit(recipe, recipeId){
         if(key === 'ingredients'){
             value.forEach((ingredient, index) => {
                 Object.entries(ingredient).forEach(([iKey, iValue]) => {
-                    patch += '{"op": "replace", "path": "/' + key + '/' + index + '/' +   iKey    +'", "value": "' + iValue + '"},'
+                    if( iValue !== undefined && iValue !== null && iValue !== ''){
+                        patch += '{"op": "replace", "path": "/' + key + '/' + index + '/' +   iKey    +'", "value": "' + iValue + '"},'
+                    }
+
                 });
             });
-        }else{
+        }else if(value !== undefined && value !== null && value !== ''){
             patch += '{"op": "replace", "path": "/' + key + '", "value": "' + value + '"},'
         }
     });
-
     const actualPatch = patch.substring(0, patch.length-2) + '}]';
+    console.log(actualPatch);
     editRecipe('/api/recipes/', recipeId, actualPatch)
         .then(HandleResponse);
 }
 
 function HandleResponse(response){
-    response.ok? alert("success") : alert("error")
+    response.ok? Redirect(response) : alert("error")
 }
 
 function Redirect(response){
-    let history = useHistory();
     alert("success");
     response.json().then(data => {
-        history.push('/recipes/' + data.id);
+       window.location = '/recipes/' + data.id;
     })
+    //TODO FIX THIS TO USE HOOKS INSTEAD ?
 }

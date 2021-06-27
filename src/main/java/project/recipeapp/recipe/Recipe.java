@@ -21,8 +21,8 @@ public class Recipe {
     private String steps = "";
     private String notes = "";
     private String glass = "";
-    private double rating;
-    private double difficulty;
+    private Double rating;
+    private Double difficulty;
     private double price;
 
 

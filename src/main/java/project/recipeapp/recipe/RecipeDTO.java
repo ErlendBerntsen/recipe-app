@@ -13,8 +13,8 @@ public class RecipeDTO {
     private String steps = "";
     private String notes = "";
     private String glass = "";
-    private double rating;
-    private double difficulty;
+    private Double rating;
+    private Double difficulty;
     private List<RecipeIngredientDTO> ingredients;
 
 
@@ -22,7 +22,7 @@ public class RecipeDTO {
 
     }
 
-    public RecipeDTO(String name, int portions, String description, String steps, String notes, String glass, double rating, double difficulty, List<RecipeIngredientDTO> ingredients){
+    public RecipeDTO(String name, int portions, String description, String steps, String notes, String glass, Double rating, Double difficulty, List<RecipeIngredientDTO> ingredients){
         this.name = name;
         this.portions = portions;
         this.description = description;

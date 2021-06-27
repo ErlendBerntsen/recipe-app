@@ -65,7 +65,7 @@ function getBasicInfo(recipe){
                         </Col>
                         <Col>
                             <p>Glass</p>
-                            <h3>{recipe.glass}</h3>
+                            <h3>{recipe.glass? recipe.glass : "Undefined"}</h3>
                         </Col>
                         <Col>
                             <p>Price</p>
@@ -73,13 +73,18 @@ function getBasicInfo(recipe){
                         </Col>
                         <Col>
                             <p>Rating</p>
-                            <h3>{ratingText}</h3>
-                            {ratingBar}
+                            {recipe.rating?
+                                <> <h3>{ratingText}</h3>{ratingBar}</>
+                                : <h3>Undefined</h3>
+                            }
+
                         </Col>
                         <Col>
                             <p>Difficulty</p>
-                            <h3>{difficultyText}</h3>
-                            {difficultyBar}
+                            {recipe.difficulty?
+                                <> <h3>{difficultyText}</h3>{difficultyBar}</>
+                                : <h3>Undefined</h3>
+                            }
                         </Col>
                     </Row>
                 </ListGroupItem>
@@ -114,7 +119,7 @@ function getIngredients(ingredients){
                 <h5>Garnish</h5>
             </Navbar>
             <ListGroup variant="flush">
-                {garnishList}
+                {garnishList.length > 0 ? garnishList : <ListGroupItem>None</ListGroupItem>}
             </ListGroup>
         </>
     );
@@ -124,8 +129,11 @@ function getSteps(steps){
     const stepsList = steps.split('|');
     let list = [];
     stepsList.forEach((step, index) => {
-        const text = (index + 1) + ". " + step
-        list.push(<ListGroupItem>{text}</ListGroupItem>)
+        if(step !== ''){
+            const text = (index + 1) + ". " + step
+            list.push(<ListGroupItem>{text}</ListGroupItem>)
+        }
+
     })
     return(
         <>
@@ -136,7 +144,7 @@ function getSteps(steps){
                 <h3>Steps</h3>
             </Navbar>
             <ListGroup >
-                {list}
+                {list.length > 0 ? list : <ListGroupItem>Undefined</ListGroupItem>}
             </ListGroup>
         </>
     );
@@ -148,13 +156,12 @@ function getSteps(steps){
 function getNotes(notes){
     return (
         <>
-
             <br/>
             <Navbar bg="light">
                 <h3>Notes</h3>
             </Navbar>
             <ListGroup variant="flush">
-                <ListGroupItem>{notes} </ListGroupItem>
+                <ListGroupItem>{notes? notes : "Undefined"} </ListGroupItem>
             </ListGroup>
         </>
     );
@@ -212,6 +219,6 @@ function handleDelete(recipe, handleCloseDeleteWarning){
         .then(response => {
             response.ok? alert("Deleted successfully") : alert("Error in deletion");
             handleCloseDeleteWarning();
-            window.location.reload();
+            window.location = '/recipes';
         });
 }
