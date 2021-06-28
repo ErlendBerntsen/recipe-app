@@ -47,7 +47,7 @@ export default function IngredientForm(props){
             patch += (i == stateNames.length - 1 ? '}]' : '},')
         });
         editIngredient('/api/ingredients/', props.ingredient.id, patch)
-            .then(handleResponse);
+            .then(history.replace('/ingredients'));
     }
 
 
@@ -56,7 +56,7 @@ export default function IngredientForm(props){
         let errorText = isCreating? "creating" : "editing"
         response.ok? setAlert(<Alert variant="success">Successfully {successText} ingredient</Alert>) :
                 setAlert(<Alert variant="danger">Error in {errorText} ingredient</Alert>);
-        history.push('/ingredients');
+        history.push('/recipes');
     }
 
     let form = (

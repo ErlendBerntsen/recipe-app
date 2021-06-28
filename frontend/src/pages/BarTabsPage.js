@@ -8,7 +8,7 @@ export default function BarTabsPage () {
     let [counter, setCounter] = useState(0);
     function handleClick(){
         setCounter(counter + 1);
-        if(counter === 3) history.push('/');
+        if(counter === 3) history.push('/recipes');
     }
     return(
         <MasterPage>

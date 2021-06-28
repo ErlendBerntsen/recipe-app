@@ -286,8 +286,7 @@ function RecipeFormik(props){
                                                         </Col>
                                                         <Col md="auto">
                                                             <Fab size="small" color="secondary" type="button" onClick={() =>{
-                                                                removedIngredients.push(index);
-                                                                remove(index)
+                                                                remove(index);
                                                             }}>
                                                                 <Clear />
                                                             </Fab>
