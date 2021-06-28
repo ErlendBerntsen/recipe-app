@@ -29,6 +29,7 @@ function GetRecipe(){
             </Spinner>
         );
     }else{
+
         return <RecipeJumbotron recipe={new Recipe(data)}/>
     }
 }

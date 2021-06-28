@@ -12,7 +12,6 @@ import {
     getAllUnits
 } from "../api/Methods";
 import {RecipeDTO, RecipeIngredientDTO} from "../api/Classes";
-import {useHistory} from "react-router";
 
 let units;
 const errorColor = "red";
@@ -202,11 +201,11 @@ function RecipeFormik(props){
                 let ingredients = []
                 values.ingredients.forEach(ingredient =>{
                     ingredients.push(new RecipeIngredientDTO(ingredient.ingredientName, ingredient.ingredientType,
-                        ingredient.amount, ingredient.unit, ingredient.isGarnish))
+                        ingredient.amount, ingredient.unit, ingredient.isGarnish ? ingredient.isGarnish : false))
                 })
                 const recipe = new RecipeDTO(values.recipeName, values.portions, values.description , stepsAsString,
                     values.notes, values.glass, values.rating, values.difficulty, ingredients)
-                isCreating ? HandleCreation(recipe) : HandleEdit(recipe, props.recipe.id)
+                isCreating ? HandleCreation(recipe) : HandleEdit(recipe, props.recipe)
                 setTimeout(() => {
                     setSubmitting(false);
                 }, 400);
@@ -286,7 +285,10 @@ function RecipeFormik(props){
                                                             </MyMultipleInput>
                                                         </Col>
                                                         <Col md="auto">
-                                                            <Fab size="small" color="secondary" type="button" onClick={() => remove(index)}>
+                                                            <Fab size="small" color="secondary" type="button" onClick={() =>{
+                                                                removedIngredients.push(index);
+                                                                remove(index)
+                                                            }}>
                                                                 <Clear />
                                                             </Fab>
                                                         </Col>
@@ -414,25 +416,22 @@ function HandleCreation(recipe){
         .then(HandleResponse);
 }
 
-function HandleEdit(recipe, recipeId){
+function HandleEdit(recipeAfterEdit, recipeBeforeEdit){
     let patch = '['
-    Object.entries(recipe).forEach(([key, value]) => {
+    Object.entries(recipeAfterEdit).forEach(([key, value]) => {
         if(key === 'ingredients'){
-            value.forEach((ingredient, index) => {
-                Object.entries(ingredient).forEach(([iKey, iValue]) => {
-                    if( iValue !== undefined && iValue !== null && iValue !== ''){
-                        patch += '{"op": "replace", "path": "/' + key + '/' + index + '/' +   iKey    +'", "value": "' + iValue + '"},'
-                    }
-
-                });
-            });
-        }else if(value !== undefined && value !== null && value !== ''){
+            patch += '{"op": "replace", "path": "/' + key + '", "value": ' + JSON.stringify(value) + '},'
+        }else if(isChanged(value, recipeBeforeEdit[key])){
             patch += '{"op": "replace", "path": "/' + key + '", "value": "' + value + '"},'
         }
     });
+    function isChanged(valueAfter, valueBefore){
+        if(valueAfter === undefined)valueAfter = null;
+        return (valueAfter !== valueBefore);
+    }
     const actualPatch = patch.substring(0, patch.length-2) + '}]';
     console.log(actualPatch);
-    editRecipe('/api/recipes/', recipeId, actualPatch)
+    editRecipe('/api/recipes/', recipeBeforeEdit.id, actualPatch)
         .then(HandleResponse);
 }
 

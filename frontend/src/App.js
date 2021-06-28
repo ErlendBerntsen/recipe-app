@@ -6,6 +6,7 @@ import RecipesPage from "./pages/RecipesPage";
 import RecipePage from "./pages/RecipePage";
 import CreateRecipePage from "./pages/CreateRecipePage";
 import EditRecipePage from "./pages/EditRecipePage";
+import BarTabsPage from "./pages/BarTabsPage";
 
 class App extends Component {
   render() {
@@ -17,6 +18,7 @@ class App extends Component {
         <Route exact path="/recipes/:id" component={RecipePage} />
         <Route exact path="/createrecipe" component={CreateRecipePage} />
         <Route exact path="/editrecipe/:id" component={EditRecipePage} />
+        <Route exact path="/bartabs" component={BarTabsPage} />
       </Switch>
     );
   }

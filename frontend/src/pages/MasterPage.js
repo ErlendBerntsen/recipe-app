@@ -12,6 +12,7 @@ export function MasterPage(props){
                     <Nav.Link as={Link} to="/" className="nav-link">Home</Nav.Link>
                     <Nav.Link as={Link} to="/ingredients" className="nav-link">Ingredients</Nav.Link>
                     <Nav.Link as={Link} to="/recipes" className="nav-link">Recipes</Nav.Link>
+                    <Nav.Link as={Link} to="/bartabs" className="nav-link">Bar Tabs</Nav.Link>
                 </Nav>
             </Navbar>
             <main style={{backgroundColor: "#f4f4f5"}}>

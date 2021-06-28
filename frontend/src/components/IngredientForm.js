@@ -2,6 +2,7 @@ import React, {useState} from "react";
 import {Alert, Button, Col, Form} from "react-bootstrap";
 import {createNewIngredient, editIngredient} from "../api/Methods";
 import {IngredientDTO} from "../api/Classes";
+import {useHistory} from "react-router";
 
 export default function IngredientForm(props){
     const isCreating = props.ingredient === null
@@ -11,6 +12,7 @@ export default function IngredientForm(props){
     const [unit, setUnit] = useState(isCreating? '' : props.ingredient.unit)
     const [category, setCategory] = useState(isCreating? '' : props.ingredient.category)
     const [alert, setAlert] = useState(null);
+    let history = useHistory();
 
 
     const allUnits = props.units.map(unit => {
@@ -54,7 +56,7 @@ export default function IngredientForm(props){
         let errorText = isCreating? "creating" : "editing"
         response.ok? setAlert(<Alert variant="success">Successfully {successText} ingredient</Alert>) :
                 setAlert(<Alert variant="danger">Error in {errorText} ingredient</Alert>);
-        window.location.reload();
+        history.push('/ingredients');
     }
 
     let form = (

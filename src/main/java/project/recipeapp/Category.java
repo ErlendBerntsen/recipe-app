@@ -2,13 +2,25 @@ package project.recipeapp;
 
 
 public enum Category {
-    VODKA("Vodka"),
-    RUM("Rum"),
-    MISC("Miscellaneous"),
-    ORANGE_LIQUEUR("Orange Liqueur"),
     GIN("Gin"),
+    VODKA("Vodka"),
+    WHISKEY("Whiskey"),
+    RUM("Rum"),
+    BRANDY("Brandy"),
+    TEQUILA("Tequila"),
+    MEZCAL("Mezcal"),
+    LIQUEUR("Liqueur"),
+    ORANGE_LIQUEUR("Orange Liqueur"),
+    AMARO("Amaro"),
+    WINE("Wine"),
     JUICE("Juice"),
-    FRIDGE_PANTRY("Fridge/Pantry");
+    SOFT_DRINK("Soft Drink"),
+    SYRUP("Syrup"),
+    BITTERS("Bitters"),
+    FRIDGE_PANTRY("Fridge/Pantry"),
+    BEER("Beer"),
+    MISC("Miscellaneous");
+
 
     private final String categoryName;
     Category(String categoryName){

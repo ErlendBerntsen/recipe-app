@@ -526,7 +526,31 @@ class RecipeControllerTest {
                 .andExpect(jsonPath( "$._links.recipes.href", is (aggregateRootLink)));
     }
 
+    @Test
+    void replaceIngredientsWithPatch() throws Exception{
+        recipeController.newRecipe(recipeDTO);
+        long id = recipeRepository.findByNameIgnoreCase(recipeDTO.getName()).get().getId();
+        Ingredient vodka = new Ingredient("Absolut Vodka", 464.90, 1, liter, Category.VODKA);
+        ingredientRepository.save(vodka);
+        String newIngredient = "[{\"name\":\"Vodka\""
+                + ",\"ingredient\":\"" + vodka.getName() + "\""
+                + ",\"amount\":" + 60
+                + ",\"unit\":\"" + "Milliliter" + "\""
+                + ",\"garnish\":" + false + "}]";
+        String patch = "[{\"op\":\"replace\",\"path\":\"/ingredients\",\"value\":" + newIngredient + "}]";
 
 
+        MockHttpServletRequestBuilder builder =
+                patch(baseURI + id)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .characterEncoding("UTF-8")
+                        .content(patch);
+
+        this.mockMvc.perform(builder)
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.ingredients[0].ingredient.name", is(vodka.getName())));
+    }
 
 }
