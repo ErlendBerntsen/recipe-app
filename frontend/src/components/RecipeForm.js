@@ -29,7 +29,7 @@ export default function RecipeForm(props){
     );
 }
 
-const MyTextInput = ({label, ...props}) => {
+export const MyTextInput = ({label, ...props}) => {
     const [field, meta] = useField(props);
     return(
       <>
